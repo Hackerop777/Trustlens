@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-trustlens-mock-url="https://netbanking.hdfcbank.com/entry">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to HDFC Bank NetBanking</title>
+  <meta name="description" content="Secure Personal Banking with HDFC Bank NetBanking.">
+  <meta property="og:site_name" content="HDFC Bank">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BankOrCreditUnion",
+    "name": "HDFC Bank",
+    "url": "https://hdfcbank.com"
+  }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 32px 24px;
+    }
+    .top-bar {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #004c8f;
+      letter-spacing: -0.5px;
+    }
+    .status-badge {
+      font-size: 11px;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      border: 1px solid #bbf7d0;
+    }
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      padding: 32px 28px;
+    }
+    h2 { font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    p.subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+    }
+    .btn-submit {
+      width: 100%;
+      background: #004c8f;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .security-note {
+      margin-top: 24px;
+      padding: 12px 14px;
+      background: #f1f5f9;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand-logo">HDFC BANK</div>
+    <div class="status-badge">AUTHENTIC SIMULATION</div>
+  </div>
+
+  <div class="card">
+    <h2>NetBanking Login</h2>
+    <p class="subtitle">Secure Banking from HDFC Bank Official Domain</p>
+
+    <!-- Legitimate Action on same domain -->
+    <form action="https://netbanking.hdfcbank.com/entry" method="POST">
+      <div class="form-group">
+        <label for="user_id">Customer ID / User ID</label>
+        <input type="text" id="user_id" name="username" placeholder="Enter Customer ID" required>
+      </div>
+
+      <button type="submit" class="btn-submit">Continue to Login</button>
+    </form>
+
+    <div class="security-note">
+      🔒 Always verify that you are browsing on <strong>https://netbanking.hdfcbank.com</strong> before entering credentials.
+    </div>
+  </div>
+</body>
+</html>

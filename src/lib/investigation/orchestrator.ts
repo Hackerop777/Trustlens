@@ -8,13 +8,17 @@ import { calculateRiskScore } from "../risk/engine";
 import { reasonOverEvidence } from "../ai/gemini-orchestrator";
 import { generateRecommendations } from "../recommendations/generator";
 import { detectDomainCombosquatting } from "../domain/combosquat";
-import { InvestigationResult } from "../types";
+import { InvestigationResult, ExtensionScanPayload } from "../types";
+import { saveInvestigation } from "./store";
 
 /**
  * Executes an end-to-end investigation on a target URL following the pipeline:
  * DETECT -> VERIFY -> REASON -> EXPLAIN -> PROTECT
  */
-export async function investigateURL(rawInputUrl: string): Promise<InvestigationResult> {
+export async function investigateURL(
+  rawInputUrl: string,
+  clientSignals?: ExtensionScanPayload
+): Promise<InvestigationResult> {
   const investigationId = `inv_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   const limitations: string[] = [];
 
@@ -48,6 +52,47 @@ export async function investigateURL(rawInputUrl: string): Promise<Investigation
     }
   } else {
     isFetchFailed = true;
+  }
+
+  // STEP 3.5: Fuse Client-Side DOM Signals (from Chrome Extension Sensor)
+  if (clientSignals) {
+    if (!pageAnalysis) {
+      pageAnalysis = {
+        finalUrl: clientSignals.url,
+        httpStatus: 200,
+        contentType: "text/html",
+        redirectChain: [],
+        title: clientSignals.page.title,
+        metaDescription: clientSignals.page.metaDescription || "",
+        claimedBrandCandidates: clientSignals.page.claimedBrands || [],
+        forms: [],
+        hasCredentialForm: clientSignals.signals.hasPasswordField,
+        hasOtpForm: clientSignals.signals.hasOtpField,
+        hasPaymentForm: clientSignals.signals.hasPaymentField,
+        hasCrossDomainForm: clientSignals.signals.hasCrossDomainForm,
+        urgencyIndicators: clientSignals.signals.urgencySnippets || [],
+        socialEngineeringKeywords: [],
+        iframeCount: 0,
+        scriptCount: 0,
+        sanitizedTextSnippet: clientSignals.page.snippet || "",
+      };
+      isFetchFailed = false;
+    } else {
+      if (clientSignals.signals.hasPasswordField) pageAnalysis.hasCredentialForm = true;
+      if (clientSignals.signals.hasOtpField) pageAnalysis.hasOtpForm = true;
+      if (clientSignals.signals.hasPaymentField) pageAnalysis.hasPaymentForm = true;
+      if (clientSignals.signals.hasCrossDomainForm) pageAnalysis.hasCrossDomainForm = true;
+      if (clientSignals.page.claimedBrands?.length) {
+        pageAnalysis.claimedBrandCandidates = Array.from(
+          new Set([...pageAnalysis.claimedBrandCandidates, ...clientSignals.page.claimedBrands])
+        );
+      }
+      if (clientSignals.signals.urgencySnippets?.length) {
+        pageAnalysis.urgencyIndicators = Array.from(
+          new Set([...pageAnalysis.urgencyIndicators, ...clientSignals.signals.urgencySnippets])
+        );
+      }
+    }
   }
 
   // STEP 4: Brand & Identity Verification & Combosquatting
@@ -137,7 +182,7 @@ export async function investigateURL(rawInputUrl: string): Promise<Investigation
     );
   }
 
-  return {
+  const fullResult: InvestigationResult = {
     id: investigationId,
     createdAt: new Date().toISOString(),
     inputType: "URL",
@@ -152,4 +197,7 @@ export async function investigateURL(rawInputUrl: string): Promise<Investigation
     recommendations,
     limitations,
   };
+
+  saveInvestigation(fullResult);
+  return fullResult;
 }

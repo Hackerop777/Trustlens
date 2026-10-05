@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRUSTLENS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 350px;
+      min-height: 440px;
+      background: #0D0E12;
+      color: #F3F4F6;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      overflow-x: hidden;
+      padding: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-badge {
+      width: 26px;
+      height: 26px;
+      background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .brand-sub {
+      font-size: 10px;
+      color: #9CA3AF;
+      letter-spacing: 0.02em;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+    }
+    .site-card {
+      margin-top: 14px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .site-label {
+      font-size: 10px;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .site-hostname {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E5E7EB;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-pill {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-pill.MATCH {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34D399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .brand-pill.MISMATCH {
+      background: rgba(239, 68, 68, 0.15);
+      color: #F87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+    .risk-banner {
+      margin-top: 10px;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .risk-banner.CRITICAL, .risk-banner.HIGH {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .risk-banner.SUSPICIOUS {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
+    .risk-banner.LOW {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .risk-banner.UNKNOWN {
+      background: rgba(107, 114, 128, 0.12);
+      border-color: rgba(107, 114, 128, 0.35);
+    }
+    .risk-meta {
+      display: flex;
+      flex-direction: column;
+    }
+    .risk-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .risk-score {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+    .risk-score-max {
+      font-size: 12px;
+      color: #9CA3AF;
+      font-weight: 500;
+    }
+    .summary-text {
+      margin-top: 10px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #D1D5DB;
+    }
+    .signals-box {
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .signals-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .signal-item {
+      font-size: 11px;
+      color: #E5E7EB;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.35;
+    }
+    .signal-bullet {
+      color: #60A5FA;
+      font-weight: bold;
+    }
+    .chain-box {
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .chain-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: #9CA3AF;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .chain-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .chain-step {
+      font-size: 11px;
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chain-arrow {
+      color: #EF4444;
+      font-size: 10px;
+    }
+    .actions {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: #2563EB;
+      color: #FFFFFF;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 9px;
+      border-radius: 9px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s ease;
+    }
+    .btn-primary:hover {
+      background: #1D4ED8;
+    }
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      color: #E5E7EB;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 7px;
+      border-radius: 9px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: background 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 0;
+      gap: 12px;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #3B82F6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .feedback-banner {
+      margin-top: 6px;
+      font-size: 11px;
+      text-align: center;
+      color: #34D399;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-badge">TL</div>
+      <div>
+        <div class="brand-title">TRUSTLENS</div>
+        <div class="brand-sub">Scam Intelligence</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div class="status-dot" id="live-indicator" title="Protection Active"></div>
+      <button id="settings-toggle-btn" title="Protection Settings" style="background: none; border: none; color: #9CA3AF; cursor: pointer; font-size: 14px; padding: 2px;">⚙</button>
+    </div>
+  </div>
+
+  <div id="settings-card" style="display: none; margin-top: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px;">
+    <div style="font-size: 11px; font-weight: 700; color: #E5E7EB; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Protection & Privacy</div>
+    
+    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #D1D5DB; margin-bottom: 8px; cursor: pointer;">
+      <span>Real-Time Website Monitoring</span>
+      <input type="checkbox" id="setting-realtime" checked style="cursor: pointer; accent-color: #2563EB;" />
+    </label>
+
+    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #D1D5DB; margin-bottom: 8px; cursor: pointer;">
+      <span>Show In-Page Warning Banners</span>
+      <input type="checkbox" id="setting-warnings" checked style="cursor: pointer; accent-color: #2563EB;" />
+    </label>
+
+    <label style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: #D1D5DB; cursor: pointer;">
+      <span>Deep DOM Form Inspection</span>
+      <input type="checkbox" id="setting-deep" checked style="cursor: pointer; accent-color: #2563EB;" />
+    </label>
+  </div>
+
+  <div id="loading" class="loading-state">
+    <div class="spinner"></div>
+    <div style="font-size: 12px; color: #9CA3AF;">Auditing page context...</div>
+  </div>
+
+  <div id="content" style="display: none;">
+    <div class="site-card">
+      <div class="site-label">Current Webpage</div>
+      <div class="site-hostname" id="tab-hostname">-</div>
+    </div>
+
+    <div id="brand-pill" class="brand-pill" style="display: none;"></div>
+
+    <div class="risk-banner" id="risk-banner">
+      <div class="risk-meta">
+        <span class="risk-label" id="risk-label">Analyzing</span>
+        <span class="risk-score"><span id="risk-score-value">0</span><span class="risk-score-max">/100</span></span>
+      </div>
+      <div id="risk-icon" style="font-size: 24px;">🛡️</div>
+    </div>
+
+    <div class="summary-text" id="summary-text">
+      Observing page security signals...
+    </div>
+
+    <div class="chain-box" id="chain-box" style="display: none;">
+      <div class="chain-title">Attack Chain Breakdown</div>
+      <div class="chain-steps" id="chain-steps"></div>
+    </div>
+
+    <div class="signals-box" id="signals-box" style="display: none;">
+      <div class="signals-title">Observed Threat Factors</div>
+      <div id="signals-list"></div>
+    </div>
+
+    <div class="actions">
+      <a href="#" id="view-report-btn" class="btn-primary" target="_blank">View Full Investigation ↗</a>
+      <button id="rescan-btn" class="btn-secondary">Scan Page Again</button>
+      <button id="fp-btn" class="btn-secondary">Report False Positive</button>
+      <div id="fp-feedback" class="feedback-banner">✓ Flagged for analyst verification.</div>
+    </div>
+
+    <div style="font-size: 10px; color: #6B7280; text-align: center; margin-top: 8px;">
+      🔒 Security signals only. Passwords and credentials are never captured.
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

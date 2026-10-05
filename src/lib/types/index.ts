@@ -261,3 +261,51 @@ export const ChatRequestSchema = z.object({
   investigationContext: InvestigationResultSchema.optional(),
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
+
+// ==========================================
+// 12. EXTENSION API CONTRACTS
+// ==========================================
+
+export const ExtensionPageSignalsSchema = z.object({
+  hasPasswordField: z.boolean().default(false),
+  hasOtpField: z.boolean().default(false),
+  hasPaymentField: z.boolean().default(false),
+  hasCrossDomainForm: z.boolean().default(false),
+  externalFormAction: z.string().optional(),
+  urgencyDetected: z.boolean().default(false),
+  urgencySnippets: z.array(z.string()).default([]),
+  inputCount: z.number().default(0),
+  formCount: z.number().default(0),
+});
+export type ExtensionPageSignals = z.infer<typeof ExtensionPageSignalsSchema>;
+
+export const ExtensionScanPayloadSchema = z.object({
+  url: z.string(),
+  hostname: z.string(),
+  page: z.object({
+    title: z.string().default(""),
+    metaDescription: z.string().optional().default(""),
+    claimedBrands: z.array(z.string()).default([]),
+    snippet: z.string().optional().default(""),
+  }),
+  signals: ExtensionPageSignalsSchema,
+});
+export type ExtensionScanPayload = z.infer<typeof ExtensionScanPayloadSchema>;
+
+export const ExtensionAnalysisResponseSchema = z.object({
+  investigationId: z.string(),
+  riskScore: z.number(),
+  classification: RiskClassificationSchema,
+  summary: z.string(),
+  topSignals: z.array(z.string()),
+  attackChain: z.array(z.string()),
+  recommendedActions: z.array(z.string()),
+  reportUrl: z.string(),
+  brandClaim: z.object({
+    claimedBrand: z.string().optional(),
+    status: BrandVerificationStatusSchema.optional(),
+    isMatch: z.boolean().optional(),
+  }).optional(),
+});
+export type ExtensionAnalysisResponse = z.infer<typeof ExtensionAnalysisResponseSchema>;
+

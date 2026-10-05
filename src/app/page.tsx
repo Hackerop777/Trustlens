@@ -12,6 +12,36 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Deep-linking: Load investigation by ID if accessed via extension or shared link
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    if (!id) return;
+
+    setIsLoading(true);
+    fetch(`/api/investigate?id=${encodeURIComponent(id)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error("Investigation not found");
+        return res.json();
+      })
+      .then((data: InvestigationResult) => {
+        setInvestigationResult(data);
+        setTimeout(() => {
+          window.scrollTo({
+            top: 440,
+            behavior: "smooth",
+          });
+        }, 200);
+      })
+      .catch((err) => {
+        console.warn("Could not load deep-linked investigation:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
   const handleInvestigate = async (target: string, type: "URL" | "MESSAGE" | "QR" | "IMAGE" = "URL") => {
     setIsLoading(true);
     setErrorMessage(null);

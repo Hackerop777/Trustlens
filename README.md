@@ -176,6 +176,39 @@ All 45 tests verify:
 
 ---
 
+## 🧩 TRUSTLENS Browser Extension (Manifest V3)
+
+The official browser-protection layer of **TRUSTLENS**. It operates as a real-time, low-overhead sensor that monitors browsing contexts, detects deceptive indicators locally, and queries the TRUSTLENS intelligence backend to display actionable threat analysis.
+
+```
+CHROME TAB ➔ LOCAL PAGE SENSOR ➔ SERVICE WORKER ➔ TRUSTLENS API ➔ RISK GAUGE & BADGE
+```
+
+### Key Capabilities:
+- **Zero-Credential Privacy Contract**: Never reads, intercepts, or logs sensitive input values, passwords, OTP digits, credit cards, or session cookies. Only structural presence flags and public DOM metadata are analyzed.
+- **Real-Time SPA & DOM Observer**: Tracks single-page application route transitions (`pushState` / `popstate`) and throttles DOM mutations using security-fingerprinted debouncing.
+- **Dual-Tier State Caching**: Synchronizes tab risk states across `chrome.storage.local` and in-memory caches, surviving Manifest V3 service worker lifecycle terminations.
+- **Apple Frosted Glass Popup & In-Page Alert**: Displays an animated radial risk gauge (0–100), brand verification badge, threat indicators, attack chain breakdown, and in-page dismissible warnings for high-risk targets.
+- **Deep Investigation Linking**: One-click `[ View Full Web Report ]` opens the investigation directly on the TRUSTLENS web platform via unique stored IDs (`?id=inv_...`).
+
+### Loading the Extension in Chrome:
+1. **Build the extension artifacts**:
+   ```bash
+   pnpm build:extension
+   ```
+2. **Load Unpacked in Chrome**:
+   - Open Chrome and navigate to `chrome://extensions`
+   - Toggle **Developer mode** in the top-right corner
+   - Click **Load unpacked** (top-left) and select `trustlens/extension/dist`
+   - Pin **TRUSTLENS** to your Chrome toolbar
+
+3. **Run the Interactive Demo**:
+   - Ensure the dev server is running: `pnpm dev`
+   - **Simulated Phishing Attack**: Visit `http://localhost:3000/demo/synthetic-phishing.html` to trigger the 🚨 `100` Critical Badge and in-page alert banner.
+   - **Simulated Authentic Portal**: Visit `http://localhost:3000/demo/synthetic-legit.html` to observe the 🟢 `10` Verified Low Risk badge.
+
+---
+
 ## 📦 Production Build
 
 ```bash
