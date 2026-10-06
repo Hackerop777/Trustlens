@@ -13,12 +13,21 @@
     body {
       width: 350px;
       min-height: 440px;
-      background: #0D0E12;
-      color: #F3F4F6;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(15, 23, 42, 0.05) 100%), rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(40px) saturate(210%);
+      -webkit-backdrop-filter: blur(40px) saturate(210%);
+      color: #F8FAFC;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
       overflow-x: hidden;
       padding: 16px;
       -webkit-font-smoothing: antialiased;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-top: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 20px;
+      box-shadow: 
+        0 24px 48px -10px rgba(0, 0, 0, 0.55),
+        inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35);
     }
     .header {
       display: flex;
@@ -290,7 +299,12 @@
 <body>
   <div class="header">
     <div class="logo">
-      <div class="logo-badge">TL</div>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+        <rect x="2" y="2" width="9" height="9" rx="2.5" fill="#F97316"/>
+        <rect x="13" y="2" width="9" height="9" rx="2.5" fill="#10B981"/>
+        <rect x="2" y="13" width="9" height="9" rx="2.5" fill="#8B5CF6"/>
+        <rect x="13" y="13" width="9" height="9" rx="2.5" fill="#3B82F6"/>
+      </svg>
       <div>
         <div class="brand-title">TRUSTLENS</div>
         <div class="brand-sub">Scam Intelligence</div>

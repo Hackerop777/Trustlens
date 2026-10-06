@@ -30,13 +30,39 @@ export async function investigateURL(
     limitations.push(`URL validation notice: ${heuristicsResult.error}`);
   }
 
-  // STEP 2: Safe Server-Side Fetch (SSRF-Guarded)
+  // Extract preliminary brand candidates from hostname & combosquat
+  const combosquat = detectDomainCombosquatting(urlAnalysis.hostname);
+  const preliminaryBrandCandidates: string[] = [];
+  if (combosquat.isCombosquat && combosquat.impersonatedBrand) {
+    preliminaryBrandCandidates.push(combosquat.impersonatedBrand);
+  }
+  const GENERIC_HOST_TOKENS = new Set([
+    "com", "org", "net", "edu", "gov", "mil", "int", "io", "co", "in", "app", "dev",
+    "xyz", "online", "site", "web", "www", "portal", "login", "auth", "secure", "test",
+    "demo", "api", "cdn", "my", "mail", "server", "admin", "info", "link", "cloud"
+  ]);
+  const hostParts = urlAnalysis.hostname.split(/[.-]/);
+  for (const part of hostParts) {
+    const lower = part.toLowerCase();
+    if (lower.length > 2 && !GENERIC_HOST_TOKENS.has(lower) && isNaN(Number(lower))) {
+      preliminaryBrandCandidates.push(part);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // PARALLEL EXECUTION:
+  // Thread 1: Safe DOM Crawler (SSRF-Guarded)
+  // Thread 2: Multi-Engine Threat Intelligence (VirusTotal & SafeBrowsing)
+  // -------------------------------------------------------------
+  const [fetchResult, threatIntel] = await Promise.all([
+    heuristicsResult.isValid ? safeFetchURL(urlAnalysis.normalizedUrl) : Promise.resolve(null),
+    checkThreatIntelligence(urlAnalysis.normalizedUrl || rawInputUrl, urlAnalysis.hostname),
+  ]);
+
   let pageAnalysis: ReturnType<typeof analyzePageContent> | undefined;
   let isFetchFailed = false;
 
-  if (heuristicsResult.isValid) {
-    const fetchResult = await safeFetchURL(urlAnalysis.normalizedUrl);
-
+  if (fetchResult) {
     if (fetchResult.isBlockedBySSRF) {
       limitations.push(`Target access restricted by SSRF protection policy: ${fetchResult.error}`);
       isFetchFailed = true;
@@ -44,7 +70,6 @@ export async function investigateURL(
       limitations.push(`Webpage could not be fetched remotely: ${fetchResult.error}. Proceeding with URL & domain intelligence.`);
       isFetchFailed = true;
     } else {
-      // STEP 3: Page Signal Extraction
       pageAnalysis = analyzePageContent(fetchResult.html, fetchResult.finalUrl);
       pageAnalysis.redirectChain = fetchResult.redirectChain;
       pageAnalysis.httpStatus = fetchResult.status;
@@ -95,36 +120,14 @@ export async function investigateURL(
     }
   }
 
-  // STEP 4: Brand & Identity Verification & Combosquatting
-  const combosquat = detectDomainCombosquatting(urlAnalysis.hostname);
-
-  // Gather brand candidates from page claims OR from combosquat OR from URL hints
-  const brandCandidates: string[] = [];
-  if (combosquat.isCombosquat && combosquat.impersonatedBrand) {
-    brandCandidates.push(combosquat.impersonatedBrand);
-  }
+  // STEP 4: Brand & Identity Verification (Tier 0 Registry + Tier 1 Live Web Search Grounding)
+  const allBrandCandidates: string[] = [...preliminaryBrandCandidates];
   if (pageAnalysis && pageAnalysis.claimedBrandCandidates.length > 0) {
-    brandCandidates.push(...pageAnalysis.claimedBrandCandidates);
-  }
-
-  // If page didn't yield brand, check if URL hostname mentions recognizable brand
-  if (brandCandidates.length === 0 && urlAnalysis.hostname) {
-    const GENERIC_HOST_TOKENS = new Set([
-      "com", "org", "net", "edu", "gov", "mil", "int", "io", "co", "in", "app", "dev",
-      "xyz", "online", "site", "web", "www", "portal", "login", "auth", "secure", "test",
-      "demo", "api", "cdn", "my", "mail", "server", "admin", "info", "link", "cloud"
-    ]);
-    const hostParts = urlAnalysis.hostname.split(/[.-]/);
-    for (const part of hostParts) {
-      const lower = part.toLowerCase();
-      if (lower.length > 2 && !GENERIC_HOST_TOKENS.has(lower) && isNaN(Number(lower))) {
-        brandCandidates.push(part);
-      }
-    }
+    allBrandCandidates.unshift(...pageAnalysis.claimedBrandCandidates);
   }
 
   let brandVerification = await verifyBrandDomainAsync(
-    brandCandidates,
+    allBrandCandidates,
     urlAnalysis.registeredDomain || urlAnalysis.hostname
   );
 
@@ -140,12 +143,6 @@ export async function investigateURL(
       verificationSource: "TRUSTLENS Autonomous Combosquatting Engine",
     };
   }
-
-  // STEP 5: Threat Intelligence
-  const threatIntel = await checkThreatIntelligence(
-    urlAnalysis.normalizedUrl || rawInputUrl,
-    urlAnalysis.hostname
-  );
 
   // STEP 6: Evidence Aggregation
   const evidence = aggregateEvidence({

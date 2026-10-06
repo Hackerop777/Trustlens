@@ -1,5 +1,6 @@
 import { BRAND_REGISTRY, BrandProfile } from "./registry";
 import { BrandVerification } from "../types";
+import { checkRestrictedDomain } from "../domain/restricted-tlds";
 
 /**
  * Normalizes text for brand matching.
@@ -56,10 +57,25 @@ export function verifyBrandDomain(
 ): BrandVerification {
   const normObservedDomain = observedDomain.toLowerCase().trim();
   const matchedProfile = findMatchingBrandProfile(claimedBrandCandidates);
+  const restrictedInfo = checkRestrictedDomain(normObservedDomain);
 
   // If no authoritative profile matches the claimed candidates:
   if (!matchedProfile) {
     const primaryCandidate = claimedBrandCandidates[0] || "Unknown Organization";
+
+    // If hosted on a restricted statutory domain (.bank.in, .gov.in, .ac.in, etc.)
+    if (restrictedInfo.isRestricted) {
+      return {
+        claimedBrand: primaryCandidate,
+        observedDomain: normObservedDomain,
+        expectedDomains: [restrictedInfo.registeredDomain || normObservedDomain],
+        status: "MATCH",
+        confidence: "high",
+        reason: `Domain '${normObservedDomain}' is chartered under ${restrictedInfo.authority}. Regulated statutory domain cannot be forged or registered by unauthorized parties.`,
+        verificationSource: restrictedInfo.authority || "Government Statutory Registry",
+      };
+    }
+
     return {
       claimedBrand: primaryCandidate,
       observedDomain: normObservedDomain,
@@ -72,9 +88,19 @@ export function verifyBrandDomain(
   }
 
   // Check if observed domain matches any legitimate domain for this profile
-  const isMatch = matchedProfile.legitimateDomains.some((legit) => {
+  let isMatch = matchedProfile.legitimateDomains.some((legit) => {
     return normObservedDomain === legit || normObservedDomain.endsWith(`.${legit}`);
   });
+
+  // If claimed brand matches a bank and domain is under restricted .bank.in with matching entity label
+  if (!isMatch && restrictedInfo.isRestricted && restrictedInfo.entityLabel) {
+    const cleanBrandName = cleanText(matchedProfile.primaryName);
+    const labelMatches = cleanBrandName.includes(restrictedInfo.entityLabel) || 
+      matchedProfile.aliases.some(a => cleanText(a).includes(restrictedInfo.entityLabel!));
+    if (labelMatches) {
+      isMatch = true;
+    }
+  }
 
   if (isMatch) {
     return {

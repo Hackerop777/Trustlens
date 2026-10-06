@@ -168,6 +168,10 @@
     if (window.location.protocol === "chrome:" || window.location.protocol === "chrome-extension:") {
       return;
     }
+    const isMockDemo = !!(document.documentElement.getAttribute("data-trustlens-mock-url") || document.body?.getAttribute("data-trustlens-mock-url"));
+    if (!isMockDemo && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" || window.location.hostname.endsWith(".local"))) {
+      return;
+    }
     const currentUrl = window.location.href;
     const now = Date.now();
     if (!force && currentUrl === lastScannedUrl && now - lastScanTimestamp < RESCAN_COOLDOWN_MS) {
@@ -217,69 +221,138 @@
       "style",
       `
     position: fixed;
-    top: 16px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 24px;
+    right: 24px;
     z-index: 2147483647;
-    width: min(92vw, 560px);
-    background: rgba(14, 15, 20, 0.94);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(239, 68, 68, 0.45);
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65), 0 0 24px rgba(239, 68, 68, 0.2);
-    border-radius: 18px;
-    padding: 14px 18px;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    color: #F3F4F6;
+    width: min(92vw, 360px);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(15, 23, 42, 0.05) 100%), rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(40px) saturate(210%);
+    -webkit-backdrop-filter: blur(40px) saturate(210%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-top: 1px solid rgba(255, 255, 255, 0.38);
+    box-shadow: 
+      0 32px 64px -12px rgba(0, 0, 0, 0.60),
+      0 16px 32px -8px rgba(0, 0, 0, 0.45),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35);
+    border-radius: 24px;
+    padding: 18px 20px 15px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #F8FAFC;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    animation: trustlens-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: trustlens-float-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
+    box-sizing: border-box;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   `
     );
     const styleEl = document.createElement("style");
     styleEl.textContent = `
-    @keyframes trustlens-slide-down {
-      from { opacity: 0; transform: translate(-50%, -18px) scale(0.98); }
-      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    @keyframes trustlens-float-in {
+      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    #trustlens-security-banner * {
+      box-sizing: border-box;
     }
     #trustlens-security-banner a:hover { opacity: 0.85; }
-    #trustlens-security-banner button:hover { opacity: 0.85; }
+    #trustlens-security-banner button:hover { opacity: 0.92; }
+    #trustlens-safety-btn:hover { background: #2563EB !important; }
+    #trustlens-close-btn:hover { color: #FFFFFF !important; }
   `;
     document.head.appendChild(styleEl);
-    const topSignalsList = (analysis.topSignals || []).slice(0, 3).map((s) => `<li style="margin-bottom: 2px;">${escapeHtml(s)}</li>`).join("");
+    const badgeText = analysis.classification === "CRITICAL" ? `CRITICAL ALERT (${analysis.riskScore}/100)` : `HIGH RISK (${analysis.riskScore}/100)`;
+    const claimed = analysis.brandClaim?.claimedBrand || "official organization";
+    const headline = analysis.brandClaim?.status === "MISMATCH" ? "Potential Impersonation" : analysis.riskScore >= 75 ? "Potential Impersonation" : "Suspicious Site Alert";
+    let signal1 = `<strong style="font-weight: 700; color: #FFFFFF;">Fake Domain:</strong> Doesn't match official ${escapeHtml(claimed)}`;
+    if (analysis.brandClaim?.status === "MATCH") {
+      signal1 = `<strong style="font-weight: 700; color: #FFFFFF;">Domain Status:</strong> Verified domain with flagged form anomalies`;
+    }
+    let signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Unverified Fields:</strong> Detects attempts to harvest passwords`;
+    if (analysis.topSignals && analysis.topSignals.length > 0) {
+      const credSignal = analysis.topSignals.find((s) => s.toLowerCase().includes("password") || s.toLowerCase().includes("otp") || s.toLowerCase().includes("harvest"));
+      if (credSignal) {
+        signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Unverified Fields:</strong> Detects attempts to harvest passwords`;
+      } else {
+        signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Security Indicator:</strong> ${escapeHtml(analysis.topSignals[0])}`;
+      }
+    }
     banner.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 10px #EF4444;"></span>
-        <span style="font-weight: 700; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: #FCA5A5;">TRUSTLENS WARNING</span>
-        <span style="font-size: 11px; background: rgba(239, 68, 68, 0.22); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.35); padding: 1px 7px; border-radius: 9999px; font-weight: 700;">
-          ${analysis.riskScore}/100
-        </span>
+    <!-- Top Row: Logo & Critical Alert Pill -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <rect x="2" y="2" width="9" height="9" rx="2.5" fill="#F97316"/>
+          <rect x="13" y="2" width="9" height="9" rx="2.5" fill="#10B981"/>
+          <rect x="2" y="13" width="9" height="9" rx="2.5" fill="#8B5CF6"/>
+          <rect x="13" y="13" width="9" height="9" rx="2.5" fill="#3B82F6"/>
+        </svg>
+        <span style="font-weight: 800; font-size: 13px; letter-spacing: 0.05em; color: #FFFFFF;">TRUSTLENS</span>
       </div>
-      <button id="trustlens-close-btn" title="Dismiss Alert" style="background: rgba(255,255,255,0.08); border: none; color: #D1D5DB; cursor: pointer; font-size: 13px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; line-height: 1;">\u2715</button>
-    </div>
-    
-    <div style="font-size: 13px; font-weight: 500; color: #E5E7EB; line-height: 1.4;">
-      ${escapeHtml(analysis.summary)}
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 10px; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.45); padding: 2px 8px; border-radius: 9999px; letter-spacing: 0.03em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);">
+          ${badgeText}
+        </span>
+        <button id="trustlens-close-btn" title="Dismiss Alert" style="background: transparent; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 14px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;">\u2715</button>
+      </div>
     </div>
 
-    ${topSignalsList ? `
-      <ul style="font-size: 11px; color: #9CA3AF; margin-left: 16px; margin-top: 2px; line-height: 1.35;">
-        ${topSignalsList}
-      </ul>
-    ` : ""}
+    <!-- Title Row: Potential Impersonation \u26A0 -->
+    <div style="font-size: 17px; font-weight: 700; color: #FFFFFF; margin-top: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+      <span>${headline}</span>
+      <span style="color: #F87171; font-size: 16px;">\u26A0</span>
+    </div>
 
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05);">
-      <span style="font-size: 11px; color: #EF4444; font-weight: 500;">Do not submit passwords, OTPs, or card details.</span>
-      <a href="${analysis.reportUrl}" target="_blank" style="font-size: 12px; font-weight: 600; color: #60A5FA; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-        View Investigation \u2197
-      </a>
+    <!-- Signal Bullets -->
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+      <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.45; color: #D1D5DB;">
+        <span style="color: #F87171; font-size: 14px; flex-shrink: 0; line-height: 1.3;">\u26A0</span>
+        <div>${signal1}</div>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.45; color: #D1D5DB;">
+        <span style="color: #F87171; font-size: 14px; flex-shrink: 0; line-height: 1.3;">\u{1F6AB}</span>
+        <div>${signal2}</div>
+      </div>
+    </div>
+
+    <!-- Go Back to Safety Button -->
+    <button id="trustlens-safety-btn" style="width: 100%; background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 100%); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.22); font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 16px rgba(29, 78, 216, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);">
+      Go Back to Safety
+    </button>
+
+    <!-- Secondary Links: Ignore (Unsafe) | View Detailed Report -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; font-size: 12px; color: #94A3B8;">
+      <span id="trustlens-ignore-btn" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">Ignore (Unsafe)</span>
+      <span>|</span>
+      <a href="${analysis.reportUrl}" target="_blank" style="color: #94A3B8; text-decoration: underline; text-underline-offset: 2px;">View Detailed Report</a>
+    </div>
+
+    <!-- Footer: \u{1F6E1} Protected by TrustLens -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; font-size: 11px; color: #94A3B8; opacity: 0.85;">
+      <span>\u{1F6E1}</span>
+      <span>Protected by TrustLens</span>
     </div>
   `;
     document.body.appendChild(banner);
     warningBannerEl = banner;
+    const safetyBtn = banner.querySelector("#trustlens-safety-btn");
+    if (safetyBtn) {
+      safetyBtn.addEventListener("click", () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = "https://www.google.com";
+        }
+      });
+    }
+    const ignoreBtn = banner.querySelector("#trustlens-ignore-btn");
+    if (ignoreBtn) {
+      ignoreBtn.addEventListener("click", () => {
+        setBannerDismissed();
+        removeWarningBanner();
+      });
+    }
     const closeBtn = banner.querySelector("#trustlens-close-btn");
     if (closeBtn) {
       closeBtn.addEventListener("click", () => {

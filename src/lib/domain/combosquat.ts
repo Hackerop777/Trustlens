@@ -1,5 +1,6 @@
 import { BRAND_REGISTRY } from "../brand/registry";
 import { parse } from "tldts";
+import { checkRestrictedDomain } from "./restricted-tlds";
 
 export interface CombosquatResult {
   isCombosquat: boolean;
@@ -49,21 +50,22 @@ const COMMON_DECEPTIVE_TOKENS = [
 
 // Additional high-target brands for rapid combosquat matching
 const EXPANDED_BRAND_LOOKUP: Record<string, { name: string; legitimateDomains: string[] }> = {
-  hdfc: { name: "HDFC Bank", legitimateDomains: ["hdfcbank.com", "hdfc.com"] },
+  hdfc: { name: "HDFC Bank", legitimateDomains: ["hdfcbank.com", "hdfc.com", "hdfc.bank.in"] },
   sbi: { name: "State Bank of India", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbi.bank.in"] },
-  onlinesbi: { name: "State Bank of India", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi", "onlinesbi.com"] },
+  onlinesbi: { name: "State Bank of India", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbi.bank.in"] },
   yono: { name: "State Bank of India (YONO)", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi"] },
-  icici: { name: "ICICI Bank", legitimateDomains: ["icicibank.com", "icicibank.co.in"] },
-  axis: { name: "Axis Bank", legitimateDomains: ["axisbank.com"] },
-  kotak: { name: "Kotak Mahindra Bank", legitimateDomains: ["kotak.com"] },
-  pnb: { name: "Punjab National Bank", legitimateDomains: ["pnbindia.in"] },
+  icici: { name: "ICICI Bank", legitimateDomains: ["icicibank.com", "icicibank.co.in", "icici.bank.in"] },
+  axis: { name: "Axis Bank", legitimateDomains: ["axisbank.com", "axis.bank.in"] },
+  kotak: { name: "Kotak Mahindra Bank", legitimateDomains: ["kotak.com", "kotak.bank.in"] },
+  pnb: { name: "Punjab National Bank", legitimateDomains: ["pnbindia.in", "pnb.bank.in"] },
   paytm: { name: "Paytm", legitimateDomains: ["paytm.com", "paytmbank.com"] },
   phonepe: { name: "PhonePe", legitimateDomains: ["phonepe.com"] },
   gpay: { name: "Google Pay", legitimateDomains: ["pay.google.com", "google.com"] },
   paypal: { name: "PayPal", legitimateDomains: ["paypal.com", "paypal.me"] },
   google: { name: "Google", legitimateDomains: ["google.com", "google.co.in"] },
   apple: { name: "Apple", legitimateDomains: ["apple.com", "icloud.com"] },
-  microsoft: { name: "Microsoft", legitimateDomains: ["microsoft.com", "live.com", "office.com"] },
+  microsoft: { name: "Microsoft", legitimateDomains: ["microsoft.com", "live.com", "office.com", "bing.com"] },
+  bing: { name: "Microsoft Bing", legitimateDomains: ["bing.com", "microsoft.com"] },
   amazon: { name: "Amazon", legitimateDomains: ["amazon.com", "amazon.in"] },
   netflix: { name: "Netflix", legitimateDomains: ["netflix.com"] },
   facebook: { name: "Meta / Facebook", legitimateDomains: ["facebook.com", "meta.com"] },
@@ -120,6 +122,21 @@ export function detectDomainCombosquatting(hostname: string): CombosquatResult {
           severity: "NONE",
         };
       }
+    }
+  }
+
+  // 1.5 Check Restricted Regulated Suffixes (.bank.in, .gov.in, .ac.in, etc.)
+  // Fraudsters cannot register domains on these government/RBI-chartered suffixes.
+  const restrictedInfo = checkRestrictedDomain(normHost);
+  if (restrictedInfo.isRestricted && restrictedInfo.entityLabel) {
+    const brand = EXPANDED_BRAND_LOOKUP[restrictedInfo.entityLabel];
+    if (brand || restrictedInfo.category === "BANKING" || restrictedInfo.category === "GOVERNMENT") {
+      return {
+        isCombosquat: false,
+        observedDomain: registeredDomain,
+        deceptiveKeywords: [],
+        severity: "NONE",
+      };
     }
   }
 

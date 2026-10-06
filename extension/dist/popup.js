@@ -128,7 +128,17 @@
         renderStatus(null);
         return;
       }
-      renderStatus(response.analysis, response.tab?.url);
+      if (!response.analysis && response.tab?.url && !response.tab.url.startsWith("chrome://")) {
+        loadingEl.style.display = "flex";
+        contentEl.style.display = "none";
+        setTimeout(() => {
+          chrome.runtime.sendMessage({ type: "GET_CURRENT_TAB_STATUS" }, (res2) => {
+            renderStatus(res2 ? res2.analysis : null, res2 ? res2.tab?.url : response.tab?.url);
+          });
+        }, 900);
+      } else {
+        renderStatus(response.analysis, response.tab?.url);
+      }
     });
     rescanBtn.addEventListener("click", () => {
       loadingEl.style.display = "flex";

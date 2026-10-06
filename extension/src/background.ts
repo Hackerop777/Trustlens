@@ -180,7 +180,33 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
       if (activeTab && activeTab.id) {
-        const analysis = TAB_RESULTS.get(activeTab.id);
+        let analysis = TAB_RESULTS.get(activeTab.id);
+
+        // 1. Check persistent URL_CACHE if service worker just woke up from sleep
+        if (!analysis && activeTab.url) {
+          const cacheKey = activeTab.url.split("?")[0].toLowerCase();
+          const cached = URL_CACHE.get(cacheKey);
+          if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+            analysis = cached.analysis;
+            TAB_RESULTS.set(activeTab.id, analysis);
+          }
+        }
+
+        // 2. If still unanalyzed on an http/https tab, immediately trigger scan or inject script
+        if (!analysis && activeTab.url && (activeTab.url.startsWith("http://") || activeTab.url.startsWith("https://"))) {
+          try {
+            chrome.tabs.sendMessage(activeTab.id, { type: "RESCAN_PAGE" }, () => {
+              if (chrome.runtime.lastError) {
+                // Tab was opened before extension was loaded/reloaded — inject content.js dynamically!
+                chrome.scripting.executeScript({
+                  target: { tabId: activeTab.id! },
+                  files: ["content.js"],
+                }).catch(() => {});
+              }
+            });
+          } catch {}
+        }
+
         sendResponse({ analysis: analysis || null, tab: activeTab });
       } else {
         sendResponse({ analysis: null });

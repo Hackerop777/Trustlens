@@ -135,7 +135,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const activeTab = tabs[0];
       if (activeTab && activeTab.id) {
-        const analysis = TAB_RESULTS.get(activeTab.id);
+        let analysis = TAB_RESULTS.get(activeTab.id);
+        if (!analysis && activeTab.url) {
+          const cacheKey = activeTab.url.split("?")[0].toLowerCase();
+          const cached = URL_CACHE.get(cacheKey);
+          if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+            analysis = cached.analysis;
+            TAB_RESULTS.set(activeTab.id, analysis);
+          }
+        }
+        if (!analysis && activeTab.url && (activeTab.url.startsWith("http://") || activeTab.url.startsWith("https://"))) {
+          try {
+            chrome.tabs.sendMessage(activeTab.id, { type: "RESCAN_PAGE" }, () => {
+              if (chrome.runtime.lastError) {
+                chrome.scripting.executeScript({
+                  target: { tabId: activeTab.id },
+                  files: ["content.js"]
+                }).catch(() => {
+                });
+              }
+            });
+          } catch {
+          }
+        }
         sendResponse({ analysis: analysis || null, tab: activeTab });
       } else {
         sendResponse({ analysis: null });

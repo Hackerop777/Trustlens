@@ -210,6 +210,22 @@ async function runTests() {
   const openAiMismatch = await verifyBrandDomainAsync(["OpenAI"], "openai-bonus-credits.xyz");
   assert(openAiMismatch.status === "MISMATCH", "Flags deceptive OpenAI domain as MISMATCH", openAiMismatch);
 
+  console.log("\n--- 13. Testing Special Restricted Domains (.bank.in, .gov.in, .ac.in) ---");
+  const hdfcBankIn = verifyBrandDomain(["HDFC Bank"], "wow.hdfc.bank.in");
+  assert(hdfcBankIn.status === "MATCH", "Recognizes authentic HDFC Bank on wow.hdfc.bank.in", hdfcBankIn);
+
+  const hdfcBankInSquat = detectDomainCombosquatting("wow.hdfc.bank.in");
+  assert(!hdfcBankInSquat.isCombosquat, "Restricted .bank.in domain is NOT flagged as combosquat", hdfcBankInSquat);
+
+  const fakeHdfcBankIn = detectDomainCombosquatting("hdfc-bank.in");
+  assert(fakeHdfcBankIn.isCombosquat, "Generic open ccTLD 'hdfc-bank.in' IS flagged as combosquat", fakeHdfcBankIn);
+
+  const govDomain = verifyBrandDomain(["Income Tax Department"], "incometax.gov.in");
+  assert(govDomain.status === "MATCH", "Recognizes authentic government entity on .gov.in", govDomain);
+
+  const fakeGov = detectDomainCombosquatting("incometax-gov.in");
+  assert(fakeGov.isCombosquat, "Combosquatted 'incometax-gov.in' on open TLD IS flagged as combosquat", fakeGov);
+
   console.log("\n==========================================");
   console.log(`TEST SUMMARY: ${passed}/${total} TESTS PASSED`);
   console.log("==========================================");
