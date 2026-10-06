@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { InvestigationInput } from "@/components/InvestigationInput";
 import { ThreatReport } from "@/components/ThreatReport";
+import { ExecutiveSidebar } from "@/components/ExecutiveSidebar";
 import { InvestigationResult } from "@/lib/types";
 import { AlertCircle, Shield } from "lucide-react";
 
@@ -80,33 +81,45 @@ export default function Home() {
     <div className="min-h-screen text-white flex flex-col selection:bg-white/20 selection:text-white">
       <Navbar />
 
-      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-8 w-full space-y-12">
-        {/* Input & Hero Section */}
-        <InvestigationInput onInvestigate={handleInvestigate} isLoading={isLoading} />
-
-        {/* Error Alert */}
-        {errorMessage && (
-          <div className="max-w-3xl mx-auto p-4 rounded-2xl bg-[#ff453a]/10 border border-[#ff453a]/25 text-white text-xs flex items-center space-x-3 shadow-lg">
-            <AlertCircle className="w-5 h-5 text-[#ff453a] shrink-0" />
-            <div className="flex-1">
-              <span className="font-semibold block mb-0.5 text-[#ff453a]">Notice</span>
-              <p className="text-white/80">{errorMessage}</p>
-            </div>
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full">
+        {/* Top-Level Grid: Persistent Left Sidebar + Main Content Workspace */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Vertical Column: Threat Score, Assessment & Actions (Starts from Top alongside URL bar) */}
+          <div className="lg:col-span-4 xl:col-span-4">
+            <ExecutiveSidebar
+              result={investigationResult}
+              onOpenPostVictim={() => {
+                // Trigger post victim modal if available
+                const btn = document.querySelector("#trigger-post-victim-btn") as HTMLButtonElement;
+                if (btn) btn.click();
+              }}
+            />
           </div>
-        )}
 
-        {/* Results Section */}
-        {investigationResult && (
-          <section className="pt-4 space-y-6">
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-              <h2 className="text-lg font-semibold tracking-[-0.02em] text-white">
-                Intelligence Threat Assessment
-              </h2>
-            </div>
-            <ThreatReport result={investigationResult} />
-          </section>
-        )}
+          {/* Right Main Column: Hero Headline, URL Bar, Options & Dynamic Investigation Results */}
+          <div className="lg:col-span-8 xl:col-span-8 space-y-8">
+            {/* Input & Hero Section */}
+            <InvestigationInput onInvestigate={handleInvestigate} isLoading={isLoading} />
+
+            {/* Error Alert */}
+            {errorMessage && (
+              <div className="max-w-3xl mx-auto p-4 rounded-2xl bg-[#ff453a]/10 border border-[#ff453a]/25 text-white text-xs flex items-center space-x-3 shadow-lg">
+                <AlertCircle className="w-5 h-5 text-[#ff453a] shrink-0" />
+                <div className="flex-1">
+                  <span className="font-semibold block mb-0.5 text-[#ff453a]">Notice</span>
+                  <p className="text-white/80">{errorMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Dynamic Results Modules */}
+            {investigationResult && (
+              <section className="pt-2 space-y-6">
+                <ThreatReport result={investigationResult} />
+              </section>
+            )}
+          </div>
+        </div>
       </main>
 
       {/* Apple-style Minimal Footer */}

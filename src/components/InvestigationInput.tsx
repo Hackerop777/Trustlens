@@ -136,78 +136,22 @@ export function InvestigationInput({ onInvestigate, isLoading }: InvestigationIn
   return (
     <div className="space-y-8">
       {/* Hero Headline */}
-      <div className="text-center max-w-2xl mx-auto space-y-3 pt-6 pb-2">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-white/70 text-xs shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)]">
-          <Sparkles className="w-3.5 h-3.5 text-sky-400" />
-          <span>Zero-Trust Evidence & Reasoned Analysis</span>
-        </div>
-
+      <div className="text-center max-w-3xl mx-auto space-y-4 pt-4 pb-2">
         <h1 className="text-4xl sm:text-5xl font-semibold tracking-[-0.035em] text-white leading-tight">
-          Don&apos;t just detect the scam.{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/60">
-            Understand it.
+          Don&apos;t just detect the scam.<br />
+          <span className="text-white">
+            Understand the threat.
           </span>
         </h1>
 
-        <p className="text-sm text-white/55 leading-relaxed font-normal">
-          TrustLens combines deterministic security tooling, authoritative brand verification registries, VirusTotal, and Gemini 3.8 to produce explainable security intelligence.
+        <p className="text-xs sm:text-sm text-white/50 leading-relaxed font-normal max-w-xl mx-auto">
+          Analyzing digital interactions with deterministic security intelligence to protect your domain.
         </p>
       </div>
 
-      {/* Main Apple Glass Container */}
-      <div className="max-w-3xl mx-auto apple-glass rounded-3xl p-5 sm:p-6 transition-all duration-300">
-        {/* Segmented Tab Controls */}
-        <div className="flex items-center p-1 bg-white/[0.03] border border-white/[0.06] rounded-2xl mb-5 overflow-x-auto shadow-inner">
-          <button
-            onClick={() => setActiveTab("URL")}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium transition-all apple-button-press ${
-              activeTab === "URL"
-                ? "bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.2)]"
-                : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" />
-            <span>Target URL</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("QR")}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium transition-all apple-button-press ${
-              activeTab === "QR"
-                ? "bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.2)]"
-                : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>QR Scanner</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("OCR")}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium transition-all apple-button-press ${
-              activeTab === "OCR"
-                ? "bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.2)]"
-                : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <ImageIcon className="w-3.5 h-3.5" />
-            <span>Screenshot OCR</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("MESSAGE")}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium transition-all apple-button-press ${
-              activeTab === "MESSAGE"
-                ? "bg-white/[0.12] text-white shadow-[0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.2)]"
-                : "text-white/60 hover:text-white hover:bg-white/[0.04]"
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Pasted Message</span>
-          </button>
-        </div>
-
-        {/* Tab 1: URL Input */}
+      {/* Main Search & Option Blocks Container */}
+      <div className="max-w-3xl mx-auto space-y-4">
+        {/* Tab 1: URL Input Bar (Floating pill from image) */}
         {activeTab === "URL" && (
           <form onSubmit={handleUrlSubmit} className="space-y-4">
             <div className="relative flex items-center">
@@ -217,13 +161,13 @@ export function InvestigationInput({ onInvestigate, isLoading }: InvestigationIn
                 onChange={(e) => setUrlInput(e.target.value)}
                 disabled={isLoading}
                 placeholder="https://hdfc-verify-portal.xyz/login"
-                className="w-full bg-white/[0.03] border border-white/[0.09] rounded-2xl pl-4 pr-32 py-3.5 text-sm text-white placeholder-white/25 focus:outline-none focus:border-white/25 focus:bg-white/[0.05] transition-all font-mono shadow-inner"
+                className="w-full bg-[#1b2226]/85 border border-white/[0.12] rounded-full pl-6 pr-36 py-4 text-sm text-white placeholder-white/25 focus:outline-none focus:border-emerald-500/40 focus:bg-[#1f292d] transition-all font-mono shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.1),0_16px_36px_-10px_rgba(0,0,0,0.5)]"
               />
 
               <button
                 type="submit"
                 disabled={isLoading || !urlInput.trim()}
-                className="absolute right-2 px-5 py-2 rounded-xl bg-white text-black font-semibold text-xs tracking-tight hover:bg-white/90 disabled:opacity-30 transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_12px_rgba(255,255,255,0.2)]"
+                className="absolute right-2 px-6 py-2.5 rounded-full bg-white text-black font-semibold text-xs tracking-tight hover:bg-white/90 disabled:opacity-30 transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_12px_rgba(255,255,255,0.2)]"
               >
                 {isLoading ? (
                   <>
@@ -238,37 +182,87 @@ export function InvestigationInput({ onInvestigate, isLoading }: InvestigationIn
                 )}
               </button>
             </div>
-
-            {/* Quick Benchmark Chips */}
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] text-white/40 mr-1">Sample Benchmarks:</span>
-              {sampleTargets.map((s, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    if (s.type === "MESSAGE") {
-                      setMessageInput(s.url);
-                      setActiveTab("MESSAGE");
-                    } else if (s.type === "QR") {
-                      setUrlInput(s.url);
-                      setActiveTab("QR");
-                    } else {
-                      setUrlInput(s.url);
-                      setActiveTab("URL");
-                    }
-                    triggerPipeline(s.url, s.type);
-                  }}
-                  disabled={isLoading}
-                  className="px-3 py-1 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-xs text-white/70 hover:text-white transition-all apple-button-press flex items-center space-x-2"
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${s.color}`} />
-                  <span>{s.label}</span>
-                </button>
-              ))}
-            </div>
           </form>
         )}
+
+        {/* Segmented Option Blocks (Pill blocks from reference image) */}
+        <div className="flex items-center justify-center gap-2.5 overflow-x-auto py-1">
+          <button
+            onClick={() => setActiveTab("URL")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium transition-all apple-button-press ${
+              activeTab === "URL"
+                ? "bg-[#2f423d] text-emerald-300 border border-emerald-400/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                : "bg-[#182024]/70 text-white/60 hover:text-white hover:bg-[#1f2a2f] border border-white/[0.08]"
+            }`}
+          >
+            <Globe className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Target URL</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("QR")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium transition-all apple-button-press ${
+              activeTab === "QR"
+                ? "bg-[#2f423d] text-emerald-300 border border-emerald-400/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                : "bg-[#182024]/70 text-white/60 hover:text-white hover:bg-[#1f2a2f] border border-white/[0.08]"
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>QR Scanner</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("OCR")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium transition-all apple-button-press ${
+              activeTab === "OCR"
+                ? "bg-[#2f423d] text-emerald-300 border border-emerald-400/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                : "bg-[#182024]/70 text-white/60 hover:text-white hover:bg-[#1f2a2f] border border-white/[0.08]"
+            }`}
+          >
+            <ImageIcon className="w-3.5 h-3.5" />
+            <span>Image OCR</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("MESSAGE")}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full text-xs font-medium transition-all apple-button-press ${
+              activeTab === "MESSAGE"
+                ? "bg-[#2f423d] text-emerald-300 border border-emerald-400/30 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]"
+                : "bg-[#182024]/70 text-white/60 hover:text-white hover:bg-[#1f2a2f] border border-white/[0.08]"
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Message Text</span>
+          </button>
+        </div>
+
+        {/* Quick Benchmark Links Row matching reference image */}
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-1 text-xs text-white/50">
+          <span className="text-[11px] text-white/40">Quick Analysis:</span>
+          {sampleTargets.map((s, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                if (s.type === "MESSAGE") {
+                  setMessageInput(s.url);
+                  setActiveTab("MESSAGE");
+                } else if (s.type === "QR") {
+                  setUrlInput(s.url);
+                  setActiveTab("QR");
+                } else {
+                  setUrlInput(s.url);
+                  setActiveTab("URL");
+                }
+                triggerPipeline(s.url, s.type);
+              }}
+              disabled={isLoading}
+              className="text-xs text-white/70 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white transition-all apple-button-press flex items-center space-x-1.5"
+            >
+              <span>{s.label}</span>
+            </button>
+          ))}
+        </div>
 
         {/* Tab 2: QR Scanner */}
         {activeTab === "QR" && (

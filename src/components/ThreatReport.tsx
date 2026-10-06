@@ -42,7 +42,7 @@ export function ThreatReport({ result }: ThreatReportProps) {
       {/* 1. Header Metadata Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-white/50 pb-2 gap-2 border-b border-white/[0.06]">
         <div className="flex items-center space-x-3">
-          <span className="flex items-center space-x-1.5 font-mono text-sky-400">
+          <span className="flex items-center space-x-1.5 font-mono text-emerald-400">
             <Fingerprint className="w-3.5 h-3.5" />
             <span>ID: {id}</span>
           </span>
@@ -53,69 +53,71 @@ export function ThreatReport({ result }: ThreatReportProps) {
           </span>
         </div>
 
-        <div className="font-mono text-white/80 truncate max-w-md bg-white/[0.04] px-3 py-1 rounded-full border border-white/[0.08] text-[11px]">
+        <div className="font-mono text-white/80 truncate max-w-md bg-[#162224]/80 px-3.5 py-1.5 rounded-full border border-white/[0.08] text-[11px] shadow-inner">
           Target: {target}
         </div>
       </div>
 
-      {/* 2. Primary Risk Meter & Verdict */}
-      <RiskMeter assessment={riskAssessment} />
-
-      {/* 3. Plain Language Explanation */}
-      <div className="apple-glass rounded-3xl p-6 sm:p-7 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-white">
-            <Info className="w-4 h-4 text-sky-400" />
-            <h3 className="text-base font-semibold tracking-[-0.02em]">
-              Executive Threat Assessment
-            </h3>
-          </div>
-          {aiAssessment.isAiFallback ? (
-            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-white/[0.06] text-white/50 border border-white/[0.08]">
-              Deterministic Engine
-            </span>
-          ) : (
-            <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/30 font-medium">
-              Gemini 3.8 Flash Reasoned
-            </span>
-          )}
-        </div>
-
-        <div className="p-4 rounded-2xl bg-black/40 border border-white/[0.06] text-sm leading-relaxed text-white/90">
-          {aiAssessment.plainLanguageVerdict}
-        </div>
-
-        {/* Identified Deceptions */}
-        {aiAssessment.identifiedDeceptions && aiAssessment.identifiedDeceptions.length > 0 && (
-          <div className="pt-1">
-            <span className="text-xs font-semibold uppercase tracking-wider text-white/40 block mb-2">
-              Identified Deception Tactics:
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {aiAssessment.identifiedDeceptions.map((dec, idx) => (
-                <span
-                  key={idx}
-                  className="px-3 py-1 rounded-full bg-[#ff453a]/10 border border-[#ff453a]/20 text-[#ff453a] text-xs font-medium"
-                >
-                  {dec}
+      {/* 2. Main Investigation Modules Grid matching reference image */}
+      <div className="space-y-6">
+        {/* Top Row: Executive Threat Assessment Synopsis & Action Checklist blocks from photo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
+                Executive Threat Assessment
+              </h4>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
+                Autonomous Verification
+              </span>
+            </div>
+            <p className="text-xs text-white/85 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/[0.04]">
+              {aiAssessment.plainLanguageVerdict}
+            </p>
+            <div className="pt-1 flex flex-wrap gap-2 text-[11px] text-white/50">
+              <span className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/[0.06] text-emerald-400">
+                Verified Analysis
+              </span>
+              {aiAssessment.identifiedDeceptions && aiAssessment.identifiedDeceptions.length > 0 && (
+                <span className="px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/25 text-rose-300">
+                  {aiAssessment.identifiedDeceptions[0]}
                 </span>
-              ))}
+              )}
             </div>
           </div>
-        )}
+
+          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
+              Recommended Actions
+            </h4>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-start space-x-2 text-emerald-300">
+                <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5 text-[10px]">
+                  ✓
+                </span>
+                <span>{recommendations.doList[0] || "Verify browser URL address bar displays lock icon"}</span>
+              </div>
+              <div className="flex items-start space-x-2 text-rose-300">
+                <span className="w-4 h-4 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0 mt-0.5 text-[10px]">
+                  ✕
+                </span>
+                <span>{recommendations.doNotList[0] || "Avoid entering 2FA tokens or passwords"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Interactive AI Assistant Card matching bottom-right of reference photo */}
+        <div className="space-y-2">
+          <FollowUpChat investigation={result} />
+        </div>
+
+        {/* Attack Chain Progression */}
+        <AttackChainView steps={aiAssessment.attackChain} />
+
+        {/* Observable Evidence Cards */}
+        <EvidenceList evidence={evidence} />
       </div>
-
-      {/* 4. Attack Chain Progression */}
-      <AttackChainView steps={aiAssessment.attackChain} />
-
-      {/* 5. Recommended Actions (DO / DO NOT) */}
-      <ActionChecklist
-        recommendations={recommendations}
-        onOpenPostVictim={() => setIsPostVictimOpen(true)}
-      />
-
-      {/* 6. Observable Evidence Cards */}
-      <EvidenceList evidence={evidence} />
 
       {/* 7. Limitations & Scope Notices */}
       {limitations && limitations.length > 0 && (

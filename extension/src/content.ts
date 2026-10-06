@@ -147,124 +147,152 @@ function showWarningBanner(analysis: ExtensionAnalysisResponse) {
     bottom: 24px;
     right: 24px;
     z-index: 2147483647;
-    width: min(92vw, 360px);
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, rgba(15, 23, 42, 0.05) 100%), rgba(15, 23, 42, 0.72);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-top: 1px solid rgba(255, 255, 255, 0.38);
+    width: 382px;
+    max-width: calc(100vw - 32px);
+    background: radial-gradient(135% 125% at 50% -15%, rgba(45, 92, 75, 0.78) 0%, rgba(28, 64, 52, 0.76) 35%, rgba(18, 42, 38, 0.78) 70%, rgba(12, 24, 24, 0.84) 100%);
+    backdrop-filter: blur(48px) saturate(210%);
+    -webkit-backdrop-filter: blur(48px) saturate(210%);
+    border: 1px solid rgba(52, 211, 153, 0.20);
+    border-top: 1px solid rgba(167, 243, 208, 0.45);
     box-shadow: 
-      0 32px 64px -12px rgba(0, 0, 0, 0.60),
-      0 16px 32px -8px rgba(0, 0, 0, 0.45),
-      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
-      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35);
-    border-radius: 24px;
-    padding: 18px 20px 15px 20px;
+      0 32px 64px -12px rgba(0, 0, 0, 0.75),
+      0 16px 32px -8px rgba(0, 0, 0, 0.55),
+      0 0 40px -10px rgba(16, 185, 129, 0.15),
+      inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.40),
+      inset 0 -1px 1px 0 rgba(0, 0, 0, 0.50);
+    border-radius: 26px;
+    padding: 22px 24px 20px 24px;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: #F8FAFC;
+    color: #F3F4F6;
     display: flex;
     flex-direction: column;
     animation: trustlens-float-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
     box-sizing: border-box;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   `
   );
 
   const styleEl = document.createElement("style");
   styleEl.textContent = `
     @keyframes trustlens-float-in {
-      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      from { opacity: 0; transform: translateY(24px) scale(0.96); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
     #trustlens-security-banner * {
       box-sizing: border-box;
     }
-    #trustlens-security-banner a:hover { opacity: 0.85; }
-    #trustlens-security-banner button:hover { opacity: 0.92; }
-    #trustlens-safety-btn:hover { background: #2563EB !important; }
-    #trustlens-close-btn:hover { color: #FFFFFF !important; }
+    #trustlens-safety-btn:hover {
+      background: #1E3760 !important;
+      border-color: rgba(255, 255, 255, 0.28) !important;
+      box-shadow: 0 6px 18px rgba(10, 20, 35, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.20) !important;
+    }
+    #trustlens-safety-btn:active {
+      transform: scale(0.985);
+    }
+    #trustlens-ignore-btn:hover, #trustlens-report-btn:hover {
+      color: #F1F5F9 !important;
+    }
+    #trustlens-close-btn:hover {
+      color: #FFFFFF !important;
+      opacity: 1 !important;
+    }
   `;
   document.head.appendChild(styleEl);
 
-  const badgeText = analysis.classification === "CRITICAL"
-    ? `CRITICAL ALERT (${analysis.riskScore}/100)`
-    : `HIGH RISK (${analysis.riskScore}/100)`;
+  const scoreText = `${analysis.riskScore || 100}/100`;
 
-  const claimed = analysis.brandClaim?.claimedBrand || "official organization";
-  const headline = analysis.brandClaim?.status === "MISMATCH"
-    ? "Potential Impersonation"
-    : (analysis.riskScore >= 75 ? "Potential Impersonation" : "Suspicious Site Alert");
+  // Parse or format dynamic details based on scan result
+  const currentHost = window.location.hostname || "current site";
+  const claimedBrandName = analysis.brandClaim?.claimedBrand || "official site";
+  const expectedDomain = analysis.brandClaim?.expectedDomain || claimedBrandName.toLowerCase().replace(/\s+/g, "") + ".com";
 
-  // Determine key bullet signals
-  let signal1 = `<strong style="font-weight: 700; color: #FFFFFF;">Fake Domain:</strong> Doesn't match official ${escapeHtml(claimed)}`;
+  let fakeDomainMarkup = `The URL <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> does not match the official <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(expectedDomain)}'</span> box.`;
   if (analysis.brandClaim?.status === "MATCH") {
-    signal1 = `<strong style="font-weight: 700; color: #FFFFFF;">Domain Status:</strong> Verified domain with flagged form anomalies`;
+    fakeDomainMarkup = `The domain <span style="background: rgba(16, 185, 129, 0.22); color: #6EE7B7; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> is legitimate, but contains suspicious credential fields.`;
   }
 
-  let signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Unverified Fields:</strong> Detects attempts to harvest passwords`;
+  let unverifiedFieldsMarkup = `Detects attempts to harvest passwords and 2FA codes on this unverified domain.`;
   if (analysis.topSignals && analysis.topSignals.length > 0) {
-    const credSignal = analysis.topSignals.find(s => s.toLowerCase().includes("password") || s.toLowerCase().includes("otp") || s.toLowerCase().includes("harvest"));
+    const credSignal = analysis.topSignals.find(s => s.toLowerCase().includes("password") || s.toLowerCase().includes("otp") || s.toLowerCase().includes("credential") || s.toLowerCase().includes("form"));
     if (credSignal) {
-      signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Unverified Fields:</strong> Detects attempts to harvest passwords`;
-    } else {
-      signal2 = `<strong style="font-weight: 700; color: #FFFFFF;">Security Indicator:</strong> ${escapeHtml(analysis.topSignals[0])}`;
+      unverifiedFieldsMarkup = escapeHtml(credSignal);
     }
   }
 
   banner.innerHTML = `
-    <!-- Top Row: Logo & Critical Alert Pill -->
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
-      <div style="display: flex; align-items: center; gap: 7px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
-          <rect x="2" y="2" width="9" height="9" rx="2.5" fill="#F97316"/>
-          <rect x="13" y="2" width="9" height="9" rx="2.5" fill="#10B981"/>
-          <rect x="2" y="13" width="9" height="9" rx="2.5" fill="#8B5CF6"/>
-          <rect x="13" y="13" width="9" height="9" rx="2.5" fill="#3B82F6"/>
+    <!-- Top Row: Hex Logo + Title & Capsule Badges -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+      <!-- Brand on Left -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="10.5" stroke="#38BDF8" stroke-width="1.8" fill="rgba(14, 165, 233, 0.15)"/>
+          <path d="M12 6.5V17.5M7.5 12H16.5" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="3" fill="#38BDF8"/>
         </svg>
-        <span style="font-weight: 800; font-size: 13px; letter-spacing: 0.05em; color: #FFFFFF;">TRUSTLENS</span>
+        <span style="font-weight: 700; font-size: 13px; letter-spacing: 0.08em; color: #FFFFFF;">TRUSTLENS</span>
       </div>
+
+      <!-- Badges on Right -->
       <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-size: 10px; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.45); padding: 2px 8px; border-radius: 9999px; letter-spacing: 0.03em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);">
-          ${badgeText}
+        <span style="font-size: 10.5px; font-weight: 600; color: #D1D5DB; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); padding: 3px 10px; border-radius: 9999px; letter-spacing: 0.04em;">
+          INVESTIGATION ALERT
         </span>
-        <button id="trustlens-close-btn" title="Dismiss Alert" style="background: transparent; border: none; color: rgba(255,255,255,0.6); cursor: pointer; font-size: 14px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0;">✕</button>
+        <span style="font-size: 10.5px; font-weight: 600; color: #E5E7EB; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.12); padding: 3px 9px; border-radius: 9999px; font-variant-numeric: tabular-nums;">
+          ${scoreText}
+        </span>
+        <button id="trustlens-close-btn" title="Dismiss" style="background: transparent; border: none; color: #9CA3AF; cursor: pointer; font-size: 13px; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; margin-left: 2px;">✕</button>
       </div>
     </div>
 
-    <!-- Title Row: Potential Impersonation ⚠ -->
-    <div style="font-size: 17px; font-weight: 700; color: #FFFFFF; margin-top: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-      <span>${headline}</span>
-      <span style="color: #F87171; font-size: 16px;">⚠</span>
+    <!-- Title Row: Potential Impersonation Detected -->
+    <div style="font-size: 20px; font-weight: 600; color: #FFFFFF; line-height: 1.35; margin-bottom: 18px; letter-spacing: -0.01em;">
+      Potential Impersonation<br>Detected
     </div>
 
-    <!-- Signal Bullets -->
-    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
-      <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.45; color: #D1D5DB;">
-        <span style="color: #F87171; font-size: 14px; flex-shrink: 0; line-height: 1.3;">⚠</span>
-        <div>${signal1}</div>
+    <!-- Threat Bullets -->
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
+      <!-- Bullet 1: Fake Domain -->
+      <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #D1D5DB;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0; margin-top: 2px;">
+          <path d="M12 3L2 21H22L12 3Z" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 9V13M12 17H12.01" stroke="#F87171" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <span style="font-weight: 600; color: #FFFFFF;">Fake Domain:</span> ${fakeDomainMarkup}
+        </div>
       </div>
-      <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.45; color: #D1D5DB;">
-        <span style="color: #F87171; font-size: 14px; flex-shrink: 0; line-height: 1.3;">🚫</span>
-        <div>${signal2}</div>
+
+      <!-- Bullet 2: Unverified Fields -->
+      <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #D1D5DB;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0; margin-top: 2px;">
+          <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 2V8H20" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9 13H15M9 17H13" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <span style="font-weight: 600; color: #FFFFFF;">Unverified Fields:</span> ${unverifiedFieldsMarkup}
+        </div>
       </div>
     </div>
 
-    <!-- Go Back to Safety Button -->
-    <button id="trustlens-safety-btn" style="width: 100%; background: linear-gradient(180deg, #2563EB 0%, #1D4ED8 100%); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.22); font-size: 14px; font-weight: 600; padding: 11px 16px; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 16px rgba(29, 78, 216, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3);">
+    <!-- Primary Action: Go Back to Safety Button -->
+    <button id="trustlens-safety-btn" style="width: 100%; background: #1B2F52; color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.15); font-size: 14.5px; font-weight: 500; padding: 12px 18px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(10, 20, 35, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12); margin-bottom: 12px;">
       Go Back to Safety
     </button>
 
-    <!-- Secondary Links: Ignore (Unsafe) | View Detailed Report -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; font-size: 12px; color: #94A3B8;">
-      <span id="trustlens-ignore-btn" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">Ignore (Unsafe)</span>
-      <span>|</span>
-      <a href="${analysis.reportUrl}" target="_blank" style="color: #94A3B8; text-decoration: underline; text-underline-offset: 2px;">View Detailed Report</a>
+    <!-- Secondary Actions Row: Ignore & Continue (Unsafe) | View Detailed Report -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #94A3B8; margin-bottom: 16px;">
+      <span id="trustlens-ignore-btn" style="cursor: pointer; text-decoration: underline; text-underline-offset: 3px; color: #94A3B8;">Ignore & Continue (Unsafe)</span>
+      <span style="opacity: 0.5;">|</span>
+      <a id="trustlens-report-btn" href="${analysis.reportUrl}" target="_blank" style="cursor: pointer; color: #94A3B8; text-decoration: underline; text-underline-offset: 3px;">View Detailed Report</a>
     </div>
 
-    <!-- Footer: 🛡 Protected by TrustLens -->
-    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; font-size: 11px; color: #94A3B8; opacity: 0.85;">
-      <span>🛡</span>
+    <!-- Subtle Footer: 🛡 Protected by TrustLens -->
+    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; color: #64748B;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2L4 5V11C4 16.52 7.42 21.62 12 22C16.58 21.62 20 16.52 20 11V5L12 2Z" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 12L11 14L15 10" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
       <span>Protected by TrustLens</span>
     </div>
   `;
