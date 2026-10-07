@@ -15,8 +15,6 @@ export function PostVictimModal({ isOpen, onClose, claimedBrand }: PostVictimMod
   const [playbook, setPlaybook] = useState<PostVictimGuidance | null>(null);
   const [loading, setLoading] = useState(false);
 
-  if (!isOpen) return null;
-
   const actionOptions = [
     { id: "entered_password", label: "Entered Password / PIN", icon: Lock },
     { id: "entered_otp", label: "Shared OTP / 2FA Code", icon: PhoneCall },
@@ -25,7 +23,7 @@ export function PostVictimModal({ isOpen, onClose, claimedBrand }: PostVictimMod
     { id: "clicked_link", label: "Only Clicked Link / Unsure", icon: MousePointer },
   ];
 
-  const handleFetchPlaybook = async (actionType: string) => {
+  const handleFetchPlaybook = React.useCallback(async (actionType: string) => {
     setSelectedAction(actionType);
     setLoading(true);
 
@@ -44,7 +42,15 @@ export function PostVictimModal({ isOpen, onClose, claimedBrand }: PostVictimMod
     } finally {
       setLoading(false);
     }
-  };
+  }, [claimedBrand]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      handleFetchPlaybook(selectedAction);
+    }
+  }, [isOpen, handleFetchPlaybook, selectedAction]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">

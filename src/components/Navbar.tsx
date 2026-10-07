@@ -5,8 +5,8 @@ import { Shield, Sparkles, Activity } from "lucide-react";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#0b1214]/80 border-b border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#030e09]/80 border-b border-emerald-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">

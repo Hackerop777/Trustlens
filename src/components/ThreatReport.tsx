@@ -2,10 +2,8 @@
 
 import React, { useState } from "react";
 import { InvestigationResult } from "@/lib/types";
-import { RiskMeter } from "./RiskMeter";
 import { AttackChainView } from "./AttackChainView";
 import { EvidenceList } from "./EvidenceCard";
-import { ActionChecklist } from "./ActionChecklist";
 import { FollowUpChat } from "./FollowUpChat";
 import { PostVictimModal } from "./PostVictimModal";
 import {
@@ -14,16 +12,75 @@ import {
   ChevronUp,
   Clock,
   Fingerprint,
-  Info,
+  Share2,
+  Check,
 } from "lucide-react";
 
 interface ThreatReportProps {
   result: InvestigationResult;
+  onOpenPostVictim?: () => void;
 }
 
-export function ThreatReport({ result }: ThreatReportProps) {
+export function ThreatReport({ result, onOpenPostVictim }: ThreatReportProps) {
   const [showJsonInspector, setShowJsonInspector] = useState(false);
   const [isPostVictimOpen, setIsPostVictimOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState<"idle" | "shared">("idle");
+
+  const handleShareEvidenceJson = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const jsonString = JSON.stringify(result, null, 2);
+      const safeTarget = (result.target || "investigation").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 32);
+      const fileName = `trustlens-evidence-${safeTarget}-${Date.now()}.json`;
+      const blob = new Blob([jsonString], { type: "application/json" });
+
+      // 1. Try Native Web Share API with File
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        try {
+          const file = new File([blob], fileName, { type: "application/json" });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `TrustLens Evidence Payload - ${result.target}`,
+              text: `Security telemetry and evidence payload for ${result.target} (Risk Score: ${result.riskAssessment?.score}/100)`,
+              files: [file],
+            });
+            setShareStatus("shared");
+            setTimeout(() => setShareStatus("idle"), 2500);
+            return;
+          }
+        } catch (shareErr: any) {
+          if (shareErr.name === "AbortError") {
+            return;
+          }
+          console.warn("Native file share fallback:", shareErr);
+        }
+      }
+
+      // 2. Direct File Download (guaranteed shareable .json file on all platforms)
+      const downloadUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = downloadUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(downloadUrl);
+
+      // 3. Convenience clipboard copy
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(jsonString);
+        } catch {
+          // ignore
+        }
+      }
+
+      setShareStatus("shared");
+      setTimeout(() => setShareStatus("idle"), 2500);
+    } catch (err) {
+      console.error("Failed to share evidence JSON:", err);
+    }
+  };
 
   const {
     id,
@@ -58,68 +115,19 @@ export function ThreatReport({ result }: ThreatReportProps) {
         </div>
       </div>
 
-      {/* 2. Main Investigation Modules Grid matching reference image */}
+      {/* 2. In-Depth Investigation Intelligence */}
       <div className="space-y-6">
-        {/* Top Row: Executive Threat Assessment Synopsis & Action Checklist blocks from photo */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
-            <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
-                Executive Threat Assessment
-              </h4>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
-                Autonomous Verification
-              </span>
-            </div>
-            <p className="text-xs text-white/85 leading-relaxed bg-black/30 p-3 rounded-xl border border-white/[0.04]">
-              {aiAssessment.plainLanguageVerdict}
-            </p>
-            <div className="pt-1 flex flex-wrap gap-2 text-[11px] text-white/50">
-              <span className="px-2.5 py-1 rounded-lg bg-black/40 border border-white/[0.06] text-emerald-400">
-                Verified Analysis
-              </span>
-              {aiAssessment.identifiedDeceptions && aiAssessment.identifiedDeceptions.length > 0 && (
-                <span className="px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/25 text-rose-300">
-                  {aiAssessment.identifiedDeceptions[0]}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
-              Recommended Actions
-            </h4>
-            <div className="space-y-2 text-xs">
-              <div className="flex items-start space-x-2 text-emerald-300">
-                <span className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5 text-[10px]">
-                  ✓
-                </span>
-                <span>{recommendations.doList[0] || "Verify browser URL address bar displays lock icon"}</span>
-              </div>
-              <div className="flex items-start space-x-2 text-rose-300">
-                <span className="w-4 h-4 rounded-full bg-rose-500/20 flex items-center justify-center shrink-0 mt-0.5 text-[10px]">
-                  ✕
-                </span>
-                <span>{recommendations.doNotList[0] || "Avoid entering 2FA tokens or passwords"}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Interactive AI Assistant Card matching bottom-right of reference photo */}
-        <div className="space-y-2">
-          <FollowUpChat investigation={result} />
-        </div>
-
         {/* Attack Chain Progression */}
         <AttackChainView steps={aiAssessment.attackChain} />
 
         {/* Observable Evidence Cards */}
         <EvidenceList evidence={evidence} />
+
+        {/* Conversational Follow-Up Assistant */}
+        <FollowUpChat investigation={result} />
       </div>
 
-      {/* 7. Limitations & Scope Notices */}
+      {/* 3. Limitations & Scope Notices */}
       {limitations && limitations.length > 0 && (
         <div className="apple-glass-subtle rounded-2xl p-4 text-xs text-white/50 space-y-1.5">
           <span className="font-semibold text-white/70 block">Analysis Boundaries & Verification Notes:</span>
@@ -133,35 +141,63 @@ export function ThreatReport({ result }: ThreatReportProps) {
         </div>
       )}
 
-      {/* 8. Conversational Follow-Up Assistant */}
-      <FollowUpChat investigation={result} />
+      {/* 4. Technical Evidence Inspector (JSON) with Shareable File Export */}
+      <div className="border border-white/[0.08] hover:border-emerald-500/25 rounded-2xl overflow-hidden bg-black/40 transition-colors">
+        <div className="w-full p-3.5 sm:p-4 flex items-center justify-between text-xs text-white/60">
+          <button
+            type="button"
+            onClick={() => setShowJsonInspector(!showJsonInspector)}
+            className="flex items-center space-x-2.5 text-left hover:text-white transition-colors cursor-pointer group"
+          >
+            <Code2 className="w-4 h-4 text-emerald-400" />
+            <span className="font-mono text-white/80 group-hover:text-emerald-300 transition-colors">
+              Raw Telemetry & Evidence Payload
+            </span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+              .JSON
+            </span>
+            {showJsonInspector ? <ChevronUp className="w-3.5 h-3.5 text-white/40" /> : <ChevronDown className="w-3.5 h-3.5 text-white/40" />}
+          </button>
 
-      {/* 9. Technical Evidence Inspector (JSON) */}
-      <div className="border border-white/[0.08] rounded-2xl overflow-hidden bg-black/30">
-        <button
-          onClick={() => setShowJsonInspector(!showJsonInspector)}
-          className="w-full p-4 flex items-center justify-between text-xs text-white/50 hover:text-white transition-colors"
-        >
+          {/* Shareable JSON File Button (Cohesive Pill Style) */}
           <div className="flex items-center space-x-2">
-            <Code2 className="w-4 h-4 text-sky-400" />
-            <span className="font-mono">Raw Telemetry & Evidence Payload (JSON)</span>
+            <button
+              type="button"
+              onClick={handleShareEvidenceJson}
+              title="Share or download evidence payload as a shareable .json file"
+              className="px-3.5 py-1.5 rounded-full bg-[#0c2a1e] hover:bg-[#0f3828] border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-xs font-medium transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_8px_rgba(16,185,129,0.18)] cursor-pointer"
+            >
+              {shareStatus === "shared" ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-mono">File Shared!</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px] font-mono hidden sm:inline">Share JSON File</span>
+                  <span className="text-[11px] font-mono sm:hidden">Share</span>
+                </>
+              )}
+            </button>
           </div>
-          {showJsonInspector ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        </div>
 
         {showJsonInspector && (
-          <div className="p-4 bg-black/80 border-t border-white/[0.06] text-[11px] font-mono text-white/70 overflow-x-auto max-h-96">
+          <div className="p-4 bg-black/90 border-t border-emerald-500/15 text-[11px] font-mono text-emerald-300/80 overflow-x-auto max-h-96">
             <pre>{JSON.stringify(result, null, 2)}</pre>
           </div>
         )}
       </div>
 
-      {/* Post-Victim Modal */}
-      <PostVictimModal
-        isOpen={isPostVictimOpen}
-        onClose={() => setIsPostVictimOpen(false)}
-        claimedBrand={brandVerification?.claimedBrand}
-      />
+      {/* Post-Victim Modal (Fallback if not handled at page level) */}
+      {!onOpenPostVictim && (
+        <PostVictimModal
+          isOpen={isPostVictimOpen}
+          onClose={() => setIsPostVictimOpen(false)}
+          claimedBrand={brandVerification?.claimedBrand}
+        />
+      )}
     </div>
   );
 }

@@ -139,19 +139,21 @@ export function FollowUpChat({ investigation }: FollowUpChatProps) {
       </div>
 
       {/* Input */}
-      <div className="relative flex items-center">
+      <div className="relative flex items-center shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
         <input
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Ask TrustLens about this investigation..."
-          className="w-full bg-white/[0.04] border border-white/[0.08] rounded-2xl pl-4 pr-12 py-3 text-xs text-white placeholder-white/30 focus:outline-none focus:border-white/20 transition-all shadow-inner font-mono"
+          className="w-full bg-[#051a10]/95 border border-emerald-500/30 rounded-[80px] pl-6 pr-14 py-3.5 text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/60 transition-all shadow-inner font-mono"
+          style={{ borderRadius: "80px" }}
         />
         <button
           onClick={() => handleSend()}
           disabled={isLoading || !input.trim()}
-          className="absolute right-1.5 p-2 bg-white text-black hover:bg-white/90 disabled:opacity-30 rounded-xl transition-all apple-button-press shadow-sm"
+          className="absolute right-2 p-2 bg-black text-emerald-400 hover:text-emerald-300 hover:bg-[#04120a] border border-emerald-500/40 disabled:opacity-30 rounded-[80px] transition-all apple-button-press shadow-sm"
+          style={{ borderRadius: "80px" }}
         >
           <ArrowUp className="w-3.5 h-3.5" />
         </button>
