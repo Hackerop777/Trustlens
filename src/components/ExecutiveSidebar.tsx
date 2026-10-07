@@ -37,9 +37,9 @@ export function ExecutiveSidebar({ result, onOpenPostVictim }: ExecutiveSidebarP
   ];
 
   return (
-    <aside className="w-full lg:w-72 xl:w-80 shrink-0 space-y-4 animate-in fade-in duration-300">
+    <aside className="w-full space-y-4 animate-in fade-in duration-300">
       {/* 1. Threat Score Block */}
-      <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-4">
+      <div className="apple-glass rounded-3xl p-4 sm:p-6 space-y-3.5 sm:space-y-4">
         <div className="flex items-center justify-between text-xs text-white/50">
           <span className="font-medium text-white/70">Threat Score</span>
           <button
@@ -83,11 +83,11 @@ export function ExecutiveSidebar({ result, onOpenPostVictim }: ExecutiveSidebarP
       </div>
 
       {/* 2. Executive Threat Assessment */}
-      <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+      <div className="apple-glass rounded-3xl p-4 sm:p-6 space-y-3">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
           Executive Threat Assessment
         </h4>
-        <div className="text-xs text-white/85 leading-relaxed bg-black/35 p-3.5 rounded-2xl border border-white/[0.05]">
+        <div className="text-xs text-white/85 leading-relaxed bg-black/35 p-3 sm:p-3.5 rounded-2xl border border-white/[0.05]">
           {plainVerdict}
         </div>
         {deceptions.length > 0 && (
@@ -105,7 +105,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim }: ExecutiveSidebarP
       </div>
 
       {/* 3. Recommended Actions */}
-      <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+      <div className="apple-glass rounded-3xl p-4 sm:p-6 space-y-3">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
           Recommended Actions
         </h4>

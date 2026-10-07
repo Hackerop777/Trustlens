@@ -60,32 +60,32 @@ export function RiskMeter({ assessment }: RiskMeterProps) {
   const Icon = theme.icon;
 
   return (
-    <div className="apple-glass rounded-3xl p-6 sm:p-7 space-y-6">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+    <div className="apple-glass rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 sm:space-y-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
         {/* Left: Score Badge & Headline */}
-        <div className="flex items-center space-x-6">
-          <div className="relative w-20 h-20 rounded-2xl bg-white/[0.04] border border-white/[0.1] flex flex-col items-center justify-center p-2 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)]">
-            <span className="text-3xl font-bold font-mono tracking-tight text-white">
+        <div className="flex flex-col xs:flex-row items-start xs:items-center gap-3.5 sm:gap-6">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/[0.04] border border-white/[0.1] flex flex-col items-center justify-center p-2 text-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.2)] shrink-0">
+            <span className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-white">
               {score}
             </span>
-            <span className="text-[10px] text-white/40 uppercase font-medium">
+            <span className="text-[9px] sm:text-[10px] text-white/40 uppercase font-medium">
               Risk Index
             </span>
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center space-x-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <span
-                className={`px-3 py-0.5 rounded-full text-xs font-semibold border tracking-tight flex items-center space-x-1.5 ${theme.badge}`}
+                className={`px-2.5 sm:px-3 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold border tracking-tight flex items-center space-x-1.5 ${theme.badge}`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 <span>{theme.label}</span>
               </span>
-              <span className="text-xs text-white/40 font-mono">
+              <span className="text-[11px] sm:text-xs text-white/40 font-mono">
                 Evidence Confidence: {confidence}%
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-semibold text-white tracking-[-0.02em]">
+            <h2 className="text-lg sm:text-2xl font-semibold text-white tracking-[-0.02em]">
               {verdictHeadline}
             </h2>
           </div>

@@ -40,29 +40,29 @@ export function ThreatReport({ result }: ThreatReportProps) {
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* 1. Header Metadata Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-white/50 pb-2 gap-2 border-b border-white/[0.06]">
-        <div className="flex items-center space-x-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-white/50 pb-2 gap-2.5 border-b border-white/[0.06]">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <span className="flex items-center space-x-1.5 font-mono text-emerald-400">
             <Fingerprint className="w-3.5 h-3.5" />
             <span>ID: {id}</span>
           </span>
-          <span className="text-white/20">|</span>
+          <span className="text-white/20 hidden xs:inline">|</span>
           <span className="flex items-center space-x-1.5 text-white/40">
             <Clock className="w-3.5 h-3.5" />
             <span>{new Date(createdAt).toLocaleString()}</span>
           </span>
         </div>
 
-        <div className="font-mono text-white/80 truncate max-w-md bg-[#162224]/80 px-3.5 py-1.5 rounded-full border border-white/[0.08] text-[11px] shadow-inner">
+        <div className="font-mono text-white/80 truncate max-w-full sm:max-w-md bg-[#162224]/80 px-3.5 py-1.5 rounded-full border border-white/[0.08] text-[11px] shadow-inner w-full sm:w-auto">
           Target: {target}
         </div>
       </div>
 
-      {/* 2. Main Investigation Modules Grid matching reference image */}
+      {/* 2. Main Investigation Modules Grid */}
       <div className="space-y-6">
-        {/* Top Row: Executive Threat Assessment Synopsis & Action Checklist blocks from photo */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+        {/* Top Row: Executive Threat Assessment Synopsis & Action Checklist blocks */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          <div className="apple-glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-3">
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
                 Executive Threat Assessment
@@ -86,7 +86,7 @@ export function ThreatReport({ result }: ThreatReportProps) {
             </div>
           </div>
 
-          <div className="apple-glass rounded-3xl p-5 sm:p-6 space-y-3">
+          <div className="apple-glass rounded-2xl sm:rounded-3xl p-4 sm:p-6 space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-white/50">
               Recommended Actions
             </h4>
@@ -105,11 +105,6 @@ export function ThreatReport({ result }: ThreatReportProps) {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Interactive AI Assistant Card matching bottom-right of reference photo */}
-        <div className="space-y-2">
-          <FollowUpChat investigation={result} />
         </div>
 
         {/* Attack Chain Progression */}

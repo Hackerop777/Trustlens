@@ -5,32 +5,35 @@ import { Shield, Sparkles, Activity } from "lucide-react";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#0b1214]/80 border-b border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#0b1214]/85 border-b border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12)]">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
         {/* Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)]">
-            <Shield className="w-4 h-4 text-emerald-400" />
+        <div className="flex items-center space-x-2.5 sm:space-x-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25)] shrink-0">
+            <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
           </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="font-semibold text-lg tracking-[-0.03em] text-white">
+          <div className="flex items-baseline space-x-1.5 sm:space-x-2">
+            <span className="font-semibold text-base sm:text-lg tracking-[-0.03em] text-white">
               TrustLens
             </span>
-            <span className="text-[11px] font-medium tracking-wider text-white/40 uppercase">
+            <span className="hidden sm:inline text-[10px] sm:text-[11px] font-medium tracking-wider text-white/40 uppercase">
               Scam Intelligence
             </span>
           </div>
         </div>
 
         {/* Status Pills */}
-        <div className="flex items-center space-x-2.5">
-          <div className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#162725]/80 border border-emerald-500/25 text-[11px] text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
-            <span className="font-medium tracking-tight">Active Telemetry</span>
+        <div className="flex items-center space-x-2 sm:space-x-2.5">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#162725]/80 border border-emerald-500/25 text-[10px] sm:text-[11px] text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+            <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse shrink-0" />
+            <span className="font-medium tracking-tight">
+              <span className="hidden xs:inline sm:inline">Active Telemetry</span>
+              <span className="xs:hidden">Active</span>
+            </span>
           </div>
 
-          <div className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#12202f]/80 border border-sky-500/25 text-[11px] text-sky-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
-            <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)]" />
+          <div className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#12202f]/80 border border-sky-500/25 text-[11px] text-sky-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+            <span className="w-2 h-2 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.9)] shrink-0" />
             <span className="font-medium tracking-tight">Integration Active</span>
           </div>
         </div>

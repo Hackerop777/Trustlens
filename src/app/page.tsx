@@ -81,23 +81,11 @@ export default function Home() {
     <div className="min-h-screen text-white flex flex-col selection:bg-white/20 selection:text-white">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-8 py-8 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8 w-full">
         {/* Top-Level Grid: Persistent Left Sidebar + Main Content Workspace */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Vertical Column: Threat Score, Assessment & Actions (Starts from Top alongside URL bar) */}
-          <div className="lg:col-span-4 xl:col-span-4">
-            <ExecutiveSidebar
-              result={investigationResult}
-              onOpenPostVictim={() => {
-                // Trigger post victim modal if available
-                const btn = document.querySelector("#trigger-post-victim-btn") as HTMLButtonElement;
-                if (btn) btn.click();
-              }}
-            />
-          </div>
-
-          {/* Right Main Column: Hero Headline, URL Bar, Options & Dynamic Investigation Results */}
-          <div className="lg:col-span-8 xl:col-span-8 space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Main Content Workspace: Hero, Input, Error, & Dynamic Results (First on mobile, right on desktop) */}
+          <div className="order-1 lg:order-2 lg:col-span-8 xl:col-span-8 space-y-6 sm:space-y-8">
             {/* Input & Hero Section */}
             <InvestigationInput onInvestigate={handleInvestigate} isLoading={isLoading} />
 
@@ -119,22 +107,34 @@ export default function Home() {
               </section>
             )}
           </div>
+
+          {/* Persistent Sidebar: Threat Score, Assessment & Actions (Second on mobile, left on desktop) */}
+          <div className="order-2 lg:order-1 lg:col-span-4 xl:col-span-4 w-full">
+            <ExecutiveSidebar
+              result={investigationResult}
+              onOpenPostVictim={() => {
+                // Trigger post victim modal if available
+                const btn = document.querySelector("#trigger-post-victim-btn") as HTMLButtonElement;
+                if (btn) btn.click();
+              }}
+            />
+          </div>
         </div>
       </main>
 
       {/* Apple-style Minimal Footer */}
-      <footer className="border-t border-white/[0.06] py-8 text-xs text-white/40 mt-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center space-x-2">
-            <Shield className="w-4 h-4 text-white/40" />
+      <footer className="border-t border-white/[0.06] py-6 sm:py-8 text-xs text-white/40 mt-12 sm:mt-20">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <Shield className="w-4 h-4 text-white/40 shrink-0" />
             <span className="font-medium text-white/60">TrustLens Architecture</span>
-            <span>—</span>
+            <span className="hidden sm:inline">—</span>
             <span>Zero-Trust Scam Intelligence</span>
           </div>
 
-          <div className="flex items-center space-x-4 text-white/40">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-white/40 text-[11px] sm:text-xs">
             <span>DETECT → VERIFY → REASON → EXPLAIN → PROTECT</span>
-            <span>|</span>
+            <span className="hidden sm:inline">|</span>
             <span className="font-mono text-white/60">THINK AI 4.0</span>
           </div>
         </div>
