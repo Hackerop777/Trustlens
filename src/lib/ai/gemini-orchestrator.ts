@@ -95,12 +95,13 @@ async function callGeminiWithFallback(
   ai: GoogleGenAI,
   prompt: string
 ): Promise<string | null> {
-  const models = ["gemini-3.8-flash", "gemini-3.5-flash-lite"];
+  // Use fast gemini-3.5-flash-lite first (1.5s latency), then fall back to gemini-3.8-flash
+  const models = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
 
   for (const model of models) {
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const response = await ai.models.generateContent({
+        const genPromise = ai.models.generateContent({
           model,
           contents: prompt,
           config: {
@@ -109,17 +110,20 @@ async function callGeminiWithFallback(
           },
         });
 
-        const text = response.text?.trim();
+        const timeoutPromise = new Promise<null>((_, reject) =>
+          setTimeout(() => reject(new Error("Timeout")), 7000)
+        );
+
+        const response: any = await Promise.race([genPromise, timeoutPromise]);
+        const text = response?.text?.trim();
         if (text) return text;
       } catch (err: any) {
         const is503 = err?.message?.includes("503") || err?.status === 503;
         const is429 = err?.message?.includes("429") || err?.status === 429;
 
         if (is503 || is429) {
-          // Wait 600ms before retrying or switching model
-          await new Promise((r) => setTimeout(r, 600));
+          await new Promise((r) => setTimeout(r, 400));
         } else {
-          // If non-503 error, break to next model
           break;
         }
       }

@@ -258,7 +258,7 @@ export const ChatRequestSchema = z.object({
   investigationId: z.string(),
   message: z.string(),
   history: z.array(ConversationMessageSchema).optional(),
-  investigationContext: InvestigationResultSchema.optional(),
+  investigationContext: z.record(z.string(), z.any()).optional(),
 });
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
 

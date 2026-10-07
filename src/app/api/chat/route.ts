@@ -66,12 +66,36 @@ Recommendations: ${JSON.stringify(investigationContext?.recommendations || {})}
       { role: "user", parts: [{ text: `${systemPrompt}\n\nUser Question: ${message}` }] },
     ];
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: chatContents,
-    });
+    let reply = "";
+    // Try fast models with fallback: gemini-3.5-flash-lite (1-2s response) then gemini-3.8-flash
+    const candidateModels = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
+    for (const model of candidateModels) {
+      try {
+        const responsePromise = ai.models.generateContent({
+          model,
+          contents: chatContents,
+          config: {
+            maxOutputTokens: 600,
+          },
+        });
 
-    const reply = response.text || "No response generated.";
+        // 8-second timeout per attempt to prevent endless loading spinner
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout on model ${model}`)), 8000)
+        );
+
+        const response: any = await Promise.race([responsePromise, timeoutPromise]);
+        reply = response.text || "";
+        if (reply.trim()) break;
+      } catch (err: any) {
+        console.warn(`[Chat API] ${model} attempt failed:`, err?.message || err);
+      }
+    }
+
+    if (!reply.trim()) {
+      // Deterministic fallback response if API is unreachable
+      reply = `Based on the investigation for ${investigationContext?.target || "this target"}, the primary threat score is ${investigationContext?.riskAssessment?.score || 0}/100. Exercise caution and do not disclose sensitive credentials or 2FA codes.`;
+    }
 
     return NextResponse.json({
       reply,

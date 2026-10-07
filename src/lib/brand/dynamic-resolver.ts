@@ -63,13 +63,19 @@ export async function resolveBrandViaLiveWeb(brandCandidate: string): Promise<Dy
     const searchPrompt = `Search the live public web to identify the authentic official primary website domain(s) for the organization or brand: "${cleanName}".
 Provide exact entity name and official primary domains.`;
 
-    const searchResponse = await ai.models.generateContent({
+    const searchPromise = ai.models.generateContent({
       model: "gemini-3.8-flash",
       contents: searchPrompt,
       config: {
         tools: [{ googleSearch: {} }],
       },
     });
+
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Search timeout")), 6000)
+    );
+
+    const searchResponse: any = await Promise.race([searchPromise, timeoutPromise]);
 
     const metadata = searchResponse.candidates?.[0]?.groundingMetadata;
     const responseText = searchResponse.text || "";
