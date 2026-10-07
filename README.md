@@ -8,7 +8,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Next.js-16.3-black?logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/TypeScript-5.0-blue?logo=typescript" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/Gemini%20AI-2.5%20%2F%20Flash-8E75B2?logo=google-gemini" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/Gemini%20AI-3.8%20%2F%20Flash-8E75B2?logo=google-gemini" alt="Gemini AI" />
   <img src="https://img.shields.io/badge/TailwindCSS-v4-38B2AC?logo=tailwind-css" alt="Tailwind CSS" />
   <img src="https://img.shields.io/badge/Design-Apple%20Liquid%20Glass-white" alt="Apple Design" />
   <img src="https://img.shields.io/badge/License-MIT-green" alt="License" />
