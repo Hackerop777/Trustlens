@@ -16,6 +16,24 @@
 
 ---
 
+## 🚀 What's New in Major Version 2.0.0
+
+TrustLens 2.0.0 introduces substantial upgrades across multimodal forensics, autonomous trust architectures, executive UI polish, and real-time reasoning:
+
+- 🖼️ **Multimodal Computer Vision Engine**: Direct screenshot upload and OCR forensics powered by `gemini-3.5-flash-lite` with native inline data processing. Automatically extracts URLs, phone numbers, brands, and visual scam patterns with sub-2-second latency.
+- 🌲 **Dark Forest Green Aesthetic**: Ultra-premium Dark Forest Green (Dark Leaf Foliage) visual language. Deep chlorophyll canopy backgrounds (`#020b06`), frosted glass cards (`rgba(6, 26, 16, 0.78)`), and deep leaf green accents (`#16a34a` / `#22c55e`).
+- 🌊 **Dynamic Center-Radiating Threat Atmosphere**: When a target is investigated, an animated wave radiates from the screen center (`50% 45%`) to wash the UI in the target's risk theme:
+  - 🟢 **Safe / Verified (0–24)**: Dark Forest Foliage Green (`#16a34a`)
+  - 🟡 **0/100 Unverified (0/100 != Safe)**: Caution Amber (`#ffd60a`) with explicit advisory banner
+  - 🟠 **High Threat (50–74)**: Fiery Orange (`#ff9f0a`)
+  - 🔴 **Critical Threat (75–100)**: Blood Crimson (`#ff453a`)
+- 🏛️ **160+ Corporate Brand & Infrastructure TLD Trust Anchors**: Integrated whitelist of over 160 restricted and brand-owned TLDs (`.google`, `.apple`, `.chase`, `.bmw`, `.citi`, etc.) and ICANN infrastructure suffixes (`.bank.in`, `.gov.in`, `.ac.in`), preventing false positives.
+- 💬 **Zero-Asterisk Intelligence Assistant**: Follow-up chat enforces clean, executive typography — eliminating unrendered markdown asterisks (`*`) in favor of structured bullet points, bold labels, and dedicated security advisory cards.
+- 🧈 **Butter-Smooth Container Physics**: Replaced body scroll locking with direct container scrolling, Apple-grade custom scrollbars, collapsible intelligence sidebars, and responsive mobile-native controls.
+- 🧪 **Expanded 79-Test Verification Suite**: Full coverage across URL heuristics, combosquatting, vision forensics, SSRF guards, and threat scoring (79/79 passing).
+
+---
+
 ## 🎯 The Core Concept
 
 **TRUSTLENS is NOT a generic "AI says phishing/safe" website.**
