@@ -32,6 +32,7 @@
       }
       hostnameEl.textContent = hostname;
       if (!analysis) {
+        document.body.setAttribute("data-theme", "unknown");
         riskBannerEl.className = "risk-banner UNKNOWN";
         riskLabelEl.textContent = "Unanalyzed";
         riskLabelEl.style.color = "#9CA3AF";
@@ -45,6 +46,7 @@
         return;
       }
       const { riskScore, classification, summary, topSignals, attackChain, brandClaim, reportUrl } = analysis;
+      document.body.setAttribute("data-theme", classification.toLowerCase());
       riskScoreValueEl.textContent = String(riskScore);
       summaryTextEl.textContent = summary;
       viewReportBtn.href = reportUrl;
