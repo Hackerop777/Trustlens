@@ -226,6 +226,123 @@ async function runTests() {
   const fakeGov = detectDomainCombosquatting("incometax-gov.in");
   assert(fakeGov.isCombosquat, "Combosquatted 'incometax-gov.in' on open TLD IS flagged as combosquat", fakeGov);
 
+  console.log("\n--- 14. Testing Corporate Brand TLDs & Infrastructure Trust Anchors (160+ TLDs) ---");
+  const { checkRestrictedDomain } = await import("./lib/domain/restricted-tlds");
+
+  // Brand TLD detection
+  const appleTld = checkRestrictedDomain("pay.apple");
+  assert(appleTld.isRestricted && appleTld.category === "BRAND_TLD", "Identifies .apple as Corporate Brand TLD", appleTld);
+  assert(appleTld.brandName === "Apple", "Resolves brand owner as Apple");
+
+  const chaseTld = checkRestrictedDomain("login.chase");
+  assert(chaseTld.isRestricted && chaseTld.category === "BRAND_TLD", "Identifies .chase as Corporate Brand TLD", chaseTld);
+  assert(chaseTld.brandName === "JPMorgan Chase", "Resolves brand owner as JPMorgan Chase");
+
+  const bmwTld = checkRestrictedDomain("portal.bmw");
+  assert(bmwTld.isRestricted && bmwTld.category === "BRAND_TLD", "Identifies .bmw as Corporate Brand TLD", bmwTld);
+
+  const icannTld = checkRestrictedDomain("root.icann");
+  assert(icannTld.isRestricted && icannTld.category === "INFRASTRUCTURE", "Identifies .icann as Infrastructure TLD", icannTld);
+
+  // Autonomous safe-zone for Brand TLDs (Zero False Positives)
+  const appleBrandSquat = detectDomainCombosquatting("pay.apple");
+  assert(!appleBrandSquat.isCombosquat, "Authentic Corporate Brand TLD 'pay.apple' is NOT flagged as combosquat", appleBrandSquat);
+
+  const chaseBrandSquat = detectDomainCombosquatting("login.chase");
+  assert(!chaseBrandSquat.isCombosquat, "Authentic Corporate Brand TLD 'login.chase' is NOT flagged as combosquat", chaseBrandSquat);
+
+  const bmwBrandSquat = detectDomainCombosquatting("portal.bmw");
+  assert(!bmwBrandSquat.isCombosquat, "Authentic Corporate Brand TLD 'portal.bmw' is NOT flagged as combosquat", bmwBrandSquat);
+
+  const googleBrandSquat = detectDomainCombosquatting("cloud.google");
+  assert(!googleBrandSquat.isCombosquat, "Authentic Corporate Brand TLD 'cloud.google' is NOT flagged as combosquat", googleBrandSquat);
+
+  // Deceptive Combosquatting on Open TLDs Targeting Brand TLD Entities
+  const fakeAppleCombosquat = detectDomainCombosquatting("apple-login-security.com");
+  assert(fakeAppleCombosquat.isCombosquat, "Detects combosquatting targeting Apple ('apple-login-security.com')", fakeAppleCombosquat);
+
+  const fakeChaseCombosquat = detectDomainCombosquatting("chase-verify-portal.xyz");
+  assert(fakeChaseCombosquat.isCombosquat, "Detects combosquatting targeting Chase ('chase-verify-portal.xyz')", fakeChaseCombosquat);
+
+  const fakeBmwCombosquat = detectDomainCombosquatting("bmw-rewards-portal.com");
+  assert(fakeBmwCombosquat.isCombosquat, "Detects combosquatting targeting BMW ('bmw-rewards-portal.com')", fakeBmwCombosquat);
+
+  const fakeDeloitteCombosquat = detectDomainCombosquatting("deloitte-portal-login.xyz");
+  assert(fakeDeloitteCombosquat.isCombosquat, "Detects combosquatting targeting Deloitte ('deloitte-portal-login.xyz')", fakeDeloitteCombosquat);
+
+  const fakeBarclaysCombosquat = detectDomainCombosquatting("barclays-banking-alert.com");
+  assert(fakeBarclaysCombosquat.isCombosquat, "Detects combosquatting targeting Barclays ('barclays-banking-alert.com')", fakeBarclaysCombosquat);
+
+  const fakeFedexCombosquat = detectDomainCombosquatting("fedex-package-tracking.xyz");
+  assert(fakeFedexCombosquat.isCombosquat, "Detects combosquatting targeting FedEx ('fedex-package-tracking.xyz')", fakeFedexCombosquat);
+
+  // Brand Verifier on Brand TLD
+  const appleMatchTld = verifyBrandDomain(["Apple"], "pay.apple");
+  assert(appleMatchTld.status === "MATCH", "Brand verifier certifies pay.apple as MATCH for Apple", appleMatchTld);
+
+  const chaseMatchTld = verifyBrandDomain(["JPMorgan Chase"], "login.chase");
+  assert(chaseMatchTld.status === "MATCH", "Brand verifier certifies login.chase as MATCH for JPMorgan Chase", chaseMatchTld);
+
+  console.log("\n--- 15. Testing Multimodal Image Forensics & 0/100 Dynamic Theme Engine ---");
+  const { analyzeImage } = await import("./lib/image/analyzer");
+  const { getRiskTheme } = await import("./lib/theme/risk-theme");
+
+  // 1. Multimodal / Image Screenshot Forensics
+  const imageAnalysisResult = await analyzeImage({
+    extractedText: "Electricity will be cut tonight at 9.30 PM. Call electric officer immediately: 9876543210 to avoid disconnection.",
+    filename: "bescom-scam-screenshot.png",
+  });
+  assert(imageAnalysisResult.riskAssessment.score >= 50, `Image analysis correctly identifies threat (score >= 50), got: ${imageAnalysisResult.riskAssessment.score}`);
+  assert(imageAnalysisResult.inputType === "IMAGE", "Input type confirmed as IMAGE");
+  assert(imageAnalysisResult.evidence.length >= 1, "Evidence items generated for screenshot");
+
+  // 2. Multimodal Image Analysis with Base64 Payload
+  const base64ImageResult = await analyzeImage({
+    imageData: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    filename: "sample-qr-receipt.png",
+  });
+  assert(base64ImageResult.id.startsWith("img_"), "Base64 image successfully processed without timeout");
+
+  // 3. 0/100 UNKNOWN Theme Check (0/100 != Safe)
+  const unknownMockResult = {
+    ...base64ImageResult,
+    riskAssessment: {
+      ...base64ImageResult.riskAssessment,
+      score: 0,
+      classification: "UNKNOWN" as const,
+    },
+  };
+  const unknownTheme = getRiskTheme(unknownMockResult);
+  assert(unknownTheme.themeKey === "UNKNOWN", "0/100 is assigned UNKNOWN theme (not SAFE)", unknownTheme.themeKey);
+  assert(unknownTheme.isUnknownZero, "0/100 is flagged as isUnknownZero for warning alert");
+  assert(unknownTheme.scoreColor.includes("ffd60a"), "0/100 uses caution amber/yellow styling, not green");
+
+  // 4. Critical 95/100 Theme Check
+  const criticalMockResult = {
+    ...base64ImageResult,
+    riskAssessment: {
+      ...base64ImageResult.riskAssessment,
+      score: 95,
+      classification: "CRITICAL" as const,
+    },
+  };
+  const criticalTheme = getRiskTheme(criticalMockResult);
+  assert(criticalTheme.themeKey === "CRITICAL", "95/100 is assigned CRITICAL theme", criticalTheme.themeKey);
+  assert(criticalTheme.scoreColor.includes("ff453a"), "95/100 uses crimson red styling");
+
+  // 5. High 50/100 Theme Check
+  const highMockResult = {
+    ...base64ImageResult,
+    riskAssessment: {
+      ...base64ImageResult.riskAssessment,
+      score: 50,
+      classification: "HIGH" as const,
+    },
+  };
+  const highTheme = getRiskTheme(highMockResult);
+  assert(highTheme.themeKey === "HIGH", "50/100 is assigned HIGH theme", highTheme.themeKey);
+  assert(highTheme.scoreColor.includes("ff9f0a"), "50/100 uses fiery orange styling");
+
   console.log("\n==========================================");
   console.log(`TEST SUMMARY: ${passed}/${total} TESTS PASSED`);
   console.log("==========================================");

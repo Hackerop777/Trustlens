@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { InvestigationResult } from "@/lib/types";
+import { getRiskTheme } from "@/lib/theme/risk-theme";
 import {
   EyeOff,
   Eye,
@@ -24,6 +25,8 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
   const [isAssessmentBoxHidden, setIsAssessmentBoxHidden] = useState(false);
   const [isActionsBoxHidden, setIsActionsBoxHidden] = useState(false);
   const [popupType, setPopupType] = useState<"SCORE" | "ASSESSMENT" | "ACTIONS" | null>(null);
+
+  const theme = getRiskTheme(result);
 
   // If no scan has run yet, provide default initial placeholder state matching the photo
   const score = result ? result.riskAssessment.score : 0;
@@ -62,7 +65,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
             <button
               type="button"
               onClick={onHide}
-              className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#0f1713]/90 hover:bg-[#0c2a1e] border border-white/[0.08] hover:border-emerald-500/40 text-[11px] text-white/70 hover:text-emerald-300 transition-all apple-button-press cursor-pointer"
+              className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081b12]/90 hover:bg-[#0a2e1d] border border-white/[0.08] hover:border-emerald-600/40 text-[11px] text-white/70 hover:text-emerald-300 transition-all apple-button-press cursor-pointer"
               title="Hide all 3 boxes"
             >
               <EyeOff className="w-3.5 h-3.5 text-emerald-400" />
@@ -75,7 +78,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
         <div
           onClick={() => setPopupType("SCORE")}
           title="Click to view detailed score & evaluation popup"
-          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-400/40 hover:bg-[#072418]/90 transition-all duration-300 cursor-pointer ${
+          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-500/40 hover:bg-[#062615]/90 transition-all duration-300 cursor-pointer ${
             isScoreBoxHidden ? "shrink-0 py-2.5" : "flex-1 min-h-0"
           }`}
         >
@@ -103,15 +106,43 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
           {!isScoreBoxHidden ? (
             <>
               <div className="my-auto py-0.5">
-                <div className="text-3xl sm:text-4xl font-bold font-mono tracking-tight text-white leading-none">
-                  {`${score}/100`}
+                <div className="flex items-baseline space-x-2">
+                  <div className={`text-3xl sm:text-4xl font-bold font-mono tracking-tight leading-none transition-colors duration-500 ${theme.scoreColor}`}>
+                    {score}/100
+                  </div>
+                  <span className={`text-[11px] font-bold tracking-wider uppercase font-mono px-2 py-0.5 rounded-full ${
+                    theme.isUnknownZero
+                      ? "bg-amber-500/20 text-amber-300 border border-amber-400/40"
+                      : classification === "LOW" && score === 0
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                      : theme.badgeClass
+                  }`}>
+                    {theme.isUnknownZero
+                      ? "UNVERIFIED"
+                      : classification === "LOW" && score === 0
+                      ? "0% THREAT (SAFE)"
+                      : "THREAT"}
+                  </span>
                 </div>
+
                 <div
-                  className="text-[11px] text-emerald-400 font-medium truncate group-hover:whitespace-normal group-hover:break-words transition-all mt-1"
+                  className={`text-[11px] font-medium truncate group-hover:whitespace-normal group-hover:break-words transition-all mt-1.5 ${theme.scoreColor}`}
                   title={headline}
                 >
                   {headline}
                 </div>
+
+                {theme.isUnknownZero ? (
+                  <div className="mt-2 px-2.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-400/35 text-[10px] text-amber-300 font-semibold leading-tight flex items-center space-x-1.5 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>0/100 != Safe • Unindexed target with unknown posture</span>
+                  </div>
+                ) : classification === "LOW" && score === 0 ? (
+                  <div className="mt-1.5 text-[10px] text-emerald-400/90 font-medium flex items-center space-x-1">
+                    <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <span>0% Threat detected • Domain is verified safe to browse</span>
+                  </div>
+                ) : null}
               </div>
 
               <div className="space-y-1">
@@ -119,13 +150,17 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
                 <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/[0.08]">
                   <div
                     className={`h-full rounded-full transition-all duration-1000 ${
-                      score >= 75
-                        ? "bg-[#ff453a] shadow-[0_0_12px_rgba(255,69,58,0.7)]"
-                        : score >= 40
-                        ? "bg-[#ff9f0a] shadow-[0_0_12px_rgba(255,159,10,0.7)]"
-                        : "bg-[#30d158] shadow-[0_0_12px_rgba(48,209,88,0.7)]"
+                      classification === "LOW" && score === 0
+                        ? "bg-[#30d158] shadow-[0_0_12px_rgba(48,209,88,0.7)]"
+                        : theme.progressBarClass
                     }`}
-                    style={{ width: `${Math.max(score, 4)}%` }}
+                    style={{
+                      width: `${
+                        classification === "LOW" && score === 0
+                          ? 100
+                          : Math.max(score, theme.isUnknownZero ? 15 : 4)
+                      }%`,
+                    }}
                   />
                 </div>
 
@@ -145,7 +180,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
             </>
           ) : (
             <div className="pt-1.5 flex items-center justify-between text-xs">
-              <span className="font-mono text-emerald-400 font-bold">{score}/100</span>
+              <span className={`font-mono font-bold ${theme.scoreColor}`}>{score}/100</span>
               <span className="text-[10px] text-white/50 truncate max-w-[170px]">{headline}</span>
             </div>
           )}
@@ -155,7 +190,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
         <div
           onClick={() => setPopupType("ASSESSMENT")}
           title="Click to view full threat intelligence popup"
-          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-400/40 hover:bg-[#072418]/90 transition-all duration-300 cursor-pointer ${
+          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-500/40 hover:bg-[#062615]/90 transition-all duration-300 cursor-pointer ${
             isAssessmentBoxHidden ? "shrink-0 py-2.5" : "flex-1 min-h-0"
           }`}
         >
@@ -221,7 +256,7 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
         <div
           onClick={() => setPopupType("ACTIONS")}
           title="Click to view complete action checklist popup"
-          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-400/40 hover:bg-[#072418]/90 transition-all duration-300 cursor-pointer ${
+          className={`apple-glass rounded-2xl sm:rounded-3xl p-3 sm:p-3.5 flex flex-col justify-between group hover:border-emerald-500/40 hover:bg-[#062615]/90 transition-all duration-300 cursor-pointer ${
             isActionsBoxHidden ? "shrink-0 py-2.5" : "flex-1 min-h-0"
           }`}
         >
@@ -359,25 +394,24 @@ export function ExecutiveSidebar({ result, onOpenPostVictim, onHide }: Executive
                   <div className="p-4 rounded-2xl bg-black/50 border border-white/[0.08] flex items-center justify-between">
                     <div>
                       <span className="text-xs font-semibold uppercase tracking-wider text-white/50 block">Risk Score</span>
-                      <div className="text-4xl font-bold font-mono tracking-tight text-white mt-1">
+                      <div className={`text-4xl font-bold font-mono tracking-tight mt-1 ${theme.scoreColor}`}>
                         {score}/100
                       </div>
                       <span
-                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full mt-2 inline-block ${
-                          score >= 75
-                            ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
-                            : score >= 40
-                            ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                            : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                        }`}
+                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full mt-2 inline-block ${theme.badgeClass}`}
                       >
-                        {classification}
+                        {theme.badgeText}
                       </span>
+                      {theme.isUnknownZero && (
+                        <div className="mt-2.5 p-2 rounded-xl bg-amber-500/15 border border-amber-400/40 text-[11px] text-amber-300 font-medium">
+                          ⚠️ <strong>0/100 does NOT mean safe.</strong> Unindexed domains with zero passive DNS history lack conclusive trust anchors.
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-right max-w-xs space-y-1">
                       <span className="text-xs text-white/40 block">Confidence Level</span>
-                      <span className="text-lg font-mono font-semibold text-emerald-400">
+                      <span className={`text-lg font-mono font-semibold ${theme.scoreColor}`}>
                         {result?.riskAssessment.confidence || 95}%
                       </span>
                       <p className="text-xs text-white/60 leading-relaxed">

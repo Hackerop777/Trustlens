@@ -127,11 +127,11 @@ Output JSON:
   "deceptions": ["Tactic 1", "Tactic 2"]
 }`;
 
-      // Try gemini-3.8-flash, fallback to gemini-3.5-flash-lite on 503
+      // Try gemini-3.5-flash-lite first (blazing fast ~1.2s latency), then fallback, with 6s timeout race
       let respText: string | null = null;
-      for (const model of ["gemini-3.8-flash", "gemini-3.5-flash-lite"]) {
+      for (const model of ["gemini-3.5-flash-lite", "gemini-3.8-flash"]) {
         try {
-          const resp = await ai.models.generateContent({
+          const genPromise = ai.models.generateContent({
             model,
             contents: prompt,
             config: {
@@ -139,10 +139,14 @@ Output JSON:
               maxOutputTokens: 250,
             },
           });
-          respText = resp.text?.trim() || null;
+          const timeoutPromise = new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout")), 6000)
+          );
+          const resp: any = await Promise.race([genPromise, timeoutPromise]);
+          respText = resp?.text?.trim() || null;
           if (respText) break;
         } catch {
-          // retry with lite model
+          // continue to next model
         }
       }
 

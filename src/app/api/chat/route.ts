@@ -26,15 +26,16 @@ export async function POST(req: NextRequest) {
 
       let responseText = `Based on the completed investigation for ${domain} (Risk Score: ${score}/100):\n\n`;
       if (status === "MISMATCH") {
-        responseText += `The primary threat signal is **Brand Impersonation**. The website claims to represent **${brand}**, but operates on **${domain}**, which is not an authentic domain for this organization.\n\n`;
+        responseText += `The primary threat signal is Brand Impersonation. The website claims to represent ${brand}, but operates on ${domain}, which is not an authentic domain for this organization.\n\n`;
       }
       if (investigationContext?.pageAnalysis?.hasCredentialForm) {
-        responseText += `We also identified a **password entry form** on this unverified host, indicating active credential harvesting.\n\n`;
+        responseText += `We also identified a password entry form on this unverified host, indicating active credential harvesting.\n\n`;
       }
-      responseText += `If you entered any credentials or sensitive data, immediately contact ${brand}'s official fraud helpline and change your passwords from a secure device.`;
+      responseText += `If you entered any credentials or sensitive data, immediately contact ${brand}'s official fraud helpline and change your passwords from a secure device.\n\n`;
+      responseText += `Note: TRUSTLENS provides security intelligence and advice, but cannot reverse financial transactions.`;
 
       return NextResponse.json({
-        reply: responseText,
+        reply: sanitizeChatText(responseText),
         isAiFallback: true,
       });
     }
@@ -45,11 +46,17 @@ export async function POST(req: NextRequest) {
 You are TRUSTLENS Security Assistant. The user is asking follow-up questions about a specific security investigation.
 You must answer their questions clearly, objectively, and empathetically.
 
-[RULES]
-1. Base your answers strictly on the investigation evidence provided below.
-2. If the user asks what to do if they already gave credentials or OTP, provide immediate, calm containment advice.
-3. Remind users that TRUSTLENS provides security intelligence and advice, but cannot reverse financial transactions.
-4. Do not speculate or contradict the deterministic evidence.
+[CRITICAL FORMATTING RULES]
+1. ABSOLUTELY NEVER output asterisk characters ('*') anywhere in your response.
+   - Do NOT use markdown bold asterisks (no **bold**).
+   - Do NOT use bullet asterisks (no * bullet).
+   - Do NOT use italic asterisks (no *italic*).
+2. For lists, use numbered lines (1. 2. 3.) or bullet points with a clean dash (- ) or direct paragraph breaks.
+3. For headings or key concepts, write them directly with capital casing or colon (e.g., "Credentials: Usernames and passwords...").
+4. For disclaimers, write them cleanly at the end: "Note: TRUSTLENS provides security intelligence and advice, but cannot reverse financial transactions." with zero asterisks.
+5. Base your answers strictly on the investigation evidence provided below.
+6. If the user asks what to do if they already gave credentials or OTP, provide immediate, calm containment advice.
+7. Do not speculate or contradict the deterministic evidence.
 
 [INVESTIGATION EVIDENCE]
 Target: ${investigationContext?.target || "N/A"}
@@ -94,11 +101,11 @@ Recommendations: ${JSON.stringify(investigationContext?.recommendations || {})}
 
     if (!reply.trim()) {
       // Deterministic fallback response if API is unreachable
-      reply = `Based on the investigation for ${investigationContext?.target || "this target"}, the primary threat score is ${investigationContext?.riskAssessment?.score || 0}/100. Exercise caution and do not disclose sensitive credentials or 2FA codes.`;
+      reply = `Based on the investigation for ${investigationContext?.target || "this target"}, the primary threat score is ${investigationContext?.riskAssessment?.score || 0}/100. Exercise caution and do not disclose sensitive credentials or 2FA codes.\n\nNote: TRUSTLENS provides security intelligence and advice, but cannot reverse financial transactions.`;
     }
 
     return NextResponse.json({
-      reply,
+      reply: sanitizeChatText(reply),
       isAiFallback: false,
     });
   } catch (error: any) {
@@ -108,4 +115,21 @@ Recommendations: ${JSON.stringify(investigationContext?.recommendations || {})}
       { status: 500 }
     );
   }
+}
+
+/**
+ * Strips raw asterisks completely and normalizes bullet lists for clean professional output.
+ */
+function sanitizeChatText(text: string): string {
+  if (!text) return "";
+  return text
+    // Replace markdown bold **text** with clean text
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    // Replace italic *text* with clean text
+    .replace(/\*([^*\n]+)\*/g, "$1")
+    // Replace leading asterisk bullets with a clean bullet symbol
+    .replace(/^\s*\*\s*/gm, "• ")
+    // Remove any remaining stray asterisks
+    .replace(/\*/g, "")
+    .trim();
 }

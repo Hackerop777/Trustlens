@@ -1,6 +1,5 @@
-import { BRAND_REGISTRY } from "../brand/registry";
 import { parse } from "tldts";
-import { checkRestrictedDomain } from "./restricted-tlds";
+import { checkRestrictedDomain, BRAND_TLDS } from "./restricted-tlds";
 
 export interface CombosquatResult {
   isCombosquat: boolean;
@@ -48,8 +47,8 @@ const COMMON_DECEPTIVE_TOKENS = [
   "recharge",
 ];
 
-// Additional high-target brands for rapid combosquat matching
-const EXPANDED_BRAND_LOOKUP: Record<string, { name: string; legitimateDomains: string[] }> = {
+// Base high-target brands for rapid combosquat matching
+export const EXPANDED_BRAND_LOOKUP: Record<string, { name: string; legitimateDomains: string[] }> = {
   hdfc: { name: "HDFC Bank", legitimateDomains: ["hdfcbank.com", "hdfc.com", "hdfc.bank.in"] },
   sbi: { name: "State Bank of India", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbi.bank.in"] },
   onlinesbi: { name: "State Bank of India", legitimateDomains: ["sbi.co.in", "onlinesbi.sbi", "onlinesbi.com", "sbi.bank.in"] },
@@ -93,6 +92,16 @@ const EXPANDED_BRAND_LOOKUP: Record<string, { name: string; legitimateDomains: s
   cloudflare: { name: "Cloudflare", legitimateDomains: ["cloudflare.com"] },
 };
 
+// Auto-register all corporate Brand TLDs into the combosquat detection dictionary
+for (const [tldKey, entry] of Object.entries(BRAND_TLDS)) {
+  if (!EXPANDED_BRAND_LOOKUP[tldKey]) {
+    EXPANDED_BRAND_LOOKUP[tldKey] = {
+      name: entry.brandName,
+      legitimateDomains: entry.legitimateDomains || [`${tldKey}.com`],
+    };
+  }
+}
+
 /**
  * Normalizes string removing punctuation.
  */
@@ -110,7 +119,7 @@ export function detectDomainCombosquatting(hostname: string): CombosquatResult {
   const registeredDomain = (tldParsed.domain || normHost).toLowerCase();
   const subdomain = (tldParsed.subdomain || "").toLowerCase();
 
-  // 1. Check if domain is genuinely legitimate for any brand
+  // 1. Check if domain is genuinely legitimate for any brand in registry
   for (const brandKey in EXPANDED_BRAND_LOOKUP) {
     const brand = EXPANDED_BRAND_LOOKUP[brandKey];
     for (const legit of brand.legitimateDomains) {
@@ -125,17 +134,36 @@ export function detectDomainCombosquatting(hostname: string): CombosquatResult {
     }
   }
 
-  // 1.5 Check Restricted Regulated Suffixes (.bank.in, .gov.in, .ac.in, etc.)
-  // Fraudsters cannot register domains on these government/RBI-chartered suffixes.
+  // 1.5 Check Restricted Regulated Suffixes & Corporate Brand TLDs (.apple, .google, .bank.in, .gov.in, etc.)
+  // Fraudsters cannot register domains on corporate Brand TLDs or statutory government/RBI-chartered suffixes.
   const restrictedInfo = checkRestrictedDomain(normHost);
-  if (restrictedInfo.isRestricted && restrictedInfo.entityLabel) {
-    const brand = EXPANDED_BRAND_LOOKUP[restrictedInfo.entityLabel];
-    if (brand || restrictedInfo.category === "BANKING" || restrictedInfo.category === "GOVERNMENT") {
+  if (restrictedInfo.isRestricted) {
+    // A. Corporate Brand TLD (.apple, .google, .microsoft, .chase, .bmw, .deloitte, etc.)
+    if (restrictedInfo.category === "BRAND_TLD") {
       return {
         isCombosquat: false,
         observedDomain: registeredDomain,
         deceptiveKeywords: [],
         severity: "NONE",
+        explanation: `Authentic Corporate Brand TLD: '${normHost}' is registered under the exclusive, ICANN-chartered corporate brand TLD .${restrictedInfo.publicSuffix} owned by ${restrictedInfo.brandName}. This domain cannot be registered by unauthorized third parties.`,
+      };
+    }
+
+    // B. Statutory & Infrastructure Trust Anchors (.bank.in, .bank, .gov.in, .gov, .edu, .mil, .int, etc.)
+    if (
+      restrictedInfo.category === "BANKING" ||
+      restrictedInfo.category === "GOVERNMENT" ||
+      restrictedInfo.category === "EDUCATION" ||
+      restrictedInfo.category === "MILITARY" ||
+      restrictedInfo.category === "RESEARCH" ||
+      restrictedInfo.category === "INFRASTRUCTURE"
+    ) {
+      return {
+        isCombosquat: false,
+        observedDomain: registeredDomain,
+        deceptiveKeywords: [],
+        severity: "NONE",
+        explanation: `Regulated Trust Anchor: '${normHost}' is chartered under ${restrictedInfo.authority}. Regulated statutory domains cannot be registered by unauthorized parties.`,
       };
     }
   }
@@ -144,11 +172,13 @@ export function detectDomainCombosquatting(hostname: string): CombosquatResult {
   const cleanedDomainName = registeredDomain.split(".")[0] || ""; // e.g. "hdfc-netbanking"
   const tokensInDomain = registeredDomain.split(/[.-]/).filter(Boolean);
   const tokensInSubdomain = subdomain.split(/[.-]/).filter(Boolean);
-  const allTokens = [...tokensInDomain, ...tokensInSubdomain];
 
   for (const brandKey in EXPANDED_BRAND_LOOKUP) {
     const brand = EXPANDED_BRAND_LOOKUP[brandKey];
     const brandClean = cleanString(brandKey);
+
+    // Skip excessively short brand keys (< 3 chars) to prevent false-positive token collisions
+    if (brandClean.length < 3) continue;
 
     // Does any token equal the brand, or does the domain name start/end with brand?
     const hasBrandInDomain =

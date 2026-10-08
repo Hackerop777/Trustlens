@@ -155,24 +155,29 @@ DETECT ➔ VERIFY ➔ REASON ➔ EXPLAIN ➔ PROTECT
 
 ## 🧪 Automated Test Suite
 
-TRUSTLENS includes an end-to-end verification suite testing all detection heuristics, brand verifiers, risk calculation rules, SMS classifiers, and AI platforms:
+TRUSTLENS includes an end-to-end verification suite testing all detection heuristics, brand verifiers, risk calculation rules, SMS classifiers, 160+ brand TLD trust anchors, and multimodal vision engines:
 
 ```bash
 pnpm tsx src/test-pipeline.ts
 ```
 
-All 45 tests verify:
-- ✅ URL Normalization & Tracking Strip
+All 79 tests verify:
+- ✅ URL Normalization & Tracking Parameter Stripping
 - ✅ Subdomain Brand Spoofing & Punycode Detection
 - ✅ SSRF Filter (Blocks `127.0.0.1`, `10.0.0.0/8`, `169.254.169.254`)
 - ✅ Brand Mismatch & Impersonation on `.xyz`
 - ✅ Credential & OTP Harvesting Form Detection
+- ✅ Cross-Domain Form Exfiltration & Urgency Traps
 - ✅ Deterministic Risk Fusion Engine
-- ✅ The 0/100 UNKNOWN Classification Guard
+- ✅ The 0/100 UNKNOWN Classification Guard (`0/100 != Safe` warning banner)
 - ✅ Autonomous Combosquatting on `.com` (Without VirusTotal)
 - ✅ VirusTotal Tiered Engine Weightage (5+ engines = +75 pts)
 - ✅ SMS Phishing & Genuine Transactional Whitelist
 - ✅ OpenAI, Anthropic, and Claude Real-Time Brand Recognition
+- ✅ Special Restricted Domains (`.bank.in`, `.gov.in`, `.ac.in`, etc.)
+- ✅ 160+ Corporate Brand TLDs & ICANN Infrastructure Trust Anchors (`.google`, `.apple`, `.chase`, `.bmw`, etc.)
+- ✅ Multimodal Screenshot & Computer Vision Security Forensics
+- ✅ Dynamic Center-Radiating Theme Engine (Emerald -> Amber -> Orange -> Crimson)
 
 ---
 

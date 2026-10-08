@@ -63,8 +63,20 @@ export function verifyBrandDomain(
   if (!matchedProfile) {
     const primaryCandidate = claimedBrandCandidates[0] || "Unknown Organization";
 
-    // If hosted on a restricted statutory domain (.bank.in, .gov.in, .ac.in, etc.)
+    // If hosted on a restricted statutory domain (.bank.in, .gov.in, .ac.in, etc.) or Corporate Brand TLD (.apple, .google, .chase, etc.)
     if (restrictedInfo.isRestricted) {
+      if (restrictedInfo.category === "BRAND_TLD") {
+        return {
+          claimedBrand: restrictedInfo.brandName || primaryCandidate,
+          observedDomain: normObservedDomain,
+          expectedDomains: [restrictedInfo.registeredDomain || normObservedDomain],
+          status: "MATCH",
+          confidence: "high",
+          reason: `Domain '${normObservedDomain}' is an authentic corporate Brand TLD (.${restrictedInfo.publicSuffix}) exclusively owned and operated by ${restrictedInfo.brandName}. Cannot be registered by unauthorized parties.`,
+          verificationSource: restrictedInfo.authority || "ICANN Corporate Brand Registry",
+        };
+      }
+
       return {
         claimedBrand: primaryCandidate,
         observedDomain: normObservedDomain,
@@ -91,6 +103,18 @@ export function verifyBrandDomain(
   let isMatch = matchedProfile.legitimateDomains.some((legit) => {
     return normObservedDomain === legit || normObservedDomain.endsWith(`.${legit}`);
   });
+
+  // If claimed brand matches a corporate Brand TLD (.apple, .google, .microsoft, .chase, etc.)
+  if (!isMatch && restrictedInfo.isRestricted && restrictedInfo.category === "BRAND_TLD") {
+    if (
+      restrictedInfo.brandName &&
+      (cleanText(matchedProfile.primaryName).includes(cleanText(restrictedInfo.brandName)) ||
+        cleanText(restrictedInfo.brandName).includes(cleanText(matchedProfile.primaryName)) ||
+        matchedProfile.aliases.some((a) => cleanText(a).includes(cleanText(restrictedInfo.brandName!))))
+    ) {
+      isMatch = true;
+    }
+  }
 
   // If claimed brand matches a bank and domain is under restricted .bank.in with matching entity label
   if (!isMatch && restrictedInfo.isRestricted && restrictedInfo.entityLabel) {

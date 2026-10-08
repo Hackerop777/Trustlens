@@ -165,7 +165,7 @@ export function ThreatReport({ result, onOpenPostVictim }: ThreatReportProps) {
               type="button"
               onClick={handleShareEvidenceJson}
               title="Share or download evidence payload as a shareable .json file"
-              className="px-3.5 py-1.5 rounded-full bg-[#0c2a1e] hover:bg-[#0f3828] border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-xs font-medium transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_8px_rgba(16,185,129,0.18)] cursor-pointer"
+              className="px-3.5 py-1.5 rounded-full bg-[#0a2e1d] hover:bg-[#0d3b24] border border-emerald-600/40 text-emerald-300 hover:text-emerald-200 text-xs font-medium transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_8px_rgba(22,163,74,0.2)] cursor-pointer"
             >
               {shareStatus === "shared" ? (
                 <>

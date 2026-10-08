@@ -7,7 +7,7 @@ import { aggregateEvidence } from "../evidence/aggregator";
 import { calculateRiskScore } from "../risk/engine";
 import { reasonOverEvidence } from "../ai/gemini-orchestrator";
 import { generateRecommendations } from "../recommendations/generator";
-import { detectDomainCombosquatting } from "../domain/combosquat";
+import { detectDomainCombosquatting, EXPANDED_BRAND_LOOKUP } from "../domain/combosquat";
 import { InvestigationResult, ExtensionScanPayload } from "../types";
 import { saveInvestigation } from "./store";
 
@@ -45,7 +45,10 @@ export async function investigateURL(
   for (const part of hostParts) {
     const lower = part.toLowerCase();
     if (lower.length > 2 && !GENERIC_HOST_TOKENS.has(lower) && isNaN(Number(lower))) {
-      preliminaryBrandCandidates.push(part);
+      // Only include candidate if it matches a registered brand name or brand TLD
+      if (EXPANDED_BRAND_LOOKUP[lower]) {
+        preliminaryBrandCandidates.push(EXPANDED_BRAND_LOOKUP[lower].name);
+      }
     }
   }
 

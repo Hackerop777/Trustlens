@@ -1,12 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #030f0a;
+  --background: #020b06;
   --foreground: #f3f4f6;
-  --glass-bg: rgba(6, 28, 19, 0.72);
-  --glass-border: rgba(16, 185, 129, 0.12);
+  --glass-bg: rgba(6, 26, 16, 0.78);
+  --glass-border: rgba(34, 197, 94, 0.16);
   --glass-border-top: rgba(255, 255, 255, 0.22);
-  --glass-hover: rgba(10, 38, 26, 0.82);
+  --glass-hover: rgba(10, 38, 24, 0.88);
+  --theme-accent: #16a34a;
+  --theme-glow: rgba(22, 163, 74, 0.22);
+}
+
+[data-theme="critical"] {
+  --glass-bg: rgba(35, 6, 10, 0.76);
+  --glass-border: rgba(239, 68, 68, 0.28);
+  --glass-hover: rgba(50, 10, 15, 0.88);
+  --theme-accent: #ff453a;
+  --theme-glow: rgba(255, 69, 58, 0.32);
+}
+
+[data-theme="high"] {
+  --glass-bg: rgba(35, 15, 6, 0.76);
+  --glass-border: rgba(249, 115, 22, 0.26);
+  --glass-hover: rgba(50, 20, 8, 0.88);
+  --theme-accent: #ff9f0a;
+  --theme-glow: rgba(255, 159, 10, 0.28);
+}
+
+[data-theme="unknown"],
+[data-theme="suspicious"] {
+  --glass-bg: rgba(30, 22, 6, 0.76);
+  --glass-border: rgba(234, 179, 8, 0.26);
+  --glass-hover: rgba(45, 32, 8, 0.88);
+  --theme-accent: #ffd60a;
+  --theme-glow: rgba(255, 214, 10, 0.25);
+}
+
+[data-theme="safe"] {
+  --glass-bg: rgba(6, 26, 16, 0.78);
+  --glass-border: rgba(34, 197, 94, 0.16);
+  --glass-hover: rgba(10, 38, 24, 0.88);
+  --theme-accent: #16a34a;
+  --theme-glow: rgba(22, 163, 74, 0.22);
 }
 
 html,
@@ -22,66 +57,68 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: 
-    /* Deep Forest Green ambient top spotlight */
-    radial-gradient(ellipse 70% 40% at 50% -10%, rgba(21, 128, 61, 0.18), transparent 70%),
-    /* Soft cyber jade side aura */
-    radial-gradient(ellipse 50% 30% at 95% 10%, rgba(22, 101, 52, 0.12), transparent 60%),
-    /* Deep forest green shadow pool bottom-left */
-    radial-gradient(circle 600px at 8% 90%, rgba(5, 46, 22, 0.20), transparent 65%),
-    /* Center-bottom subtle obsidian forest green depth */
-    radial-gradient(ellipse 75% 45% at 50% 65%, rgba(2, 28, 14, 0.20), transparent 75%),
-    /* Subtle modern cyber-grid sheen */
-    linear-gradient(rgba(34, 197, 94, 0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 197, 94, 0.018) 1px, transparent 1px),
-    /* Darker pitch black to deep forest gradient base */
-    linear-gradient(180deg, #010804 0%, #000301 32%, #010502 65%, #000000 100%);
+    /* Deep ambient dark forest leaf top spotlight */
+    radial-gradient(ellipse 70% 40% at 50% -10%, rgba(13, 59, 32, 0.28), transparent 70%),
+    /* Soft side dark leaf aura */
+    radial-gradient(ellipse 50% 30% at 95% 10%, rgba(10, 48, 25, 0.20), transparent 60%),
+    /* Shadow pool bottom-left deep foliage */
+    radial-gradient(circle 600px at 8% 90%, rgba(5, 34, 18, 0.28), transparent 65%),
+    /* Center-bottom depth */
+    radial-gradient(ellipse 75% 45% at 50% 65%, rgba(3, 20, 10, 0.30), transparent 75%),
+    /* Subtle modern cyber-grid */
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    /* Deep dark forest floor gradient base */
+    linear-gradient(180deg, #020c06 0%, #010603 32%, #010804 65%, #000000 100%);
   background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px, 100% 100%;
   background-attachment: fixed;
+  transition: background-color 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Apple Liquid Glass Card */
 .apple-glass {
-  background: linear-gradient(155deg, rgba(7, 30, 20, 0.84) 0%, rgba(3, 14, 9, 0.94) 100%);
+  background: var(--glass-bg);
   backdrop-filter: blur(40px) saturate(200%);
   -webkit-backdrop-filter: blur(40px) saturate(200%);
-  border: 1px solid rgba(16, 185, 129, 0.16);
+  border: 1px solid var(--glass-border);
   box-shadow: 
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 0 20px 0 rgba(16, 185, 129, 0.05),
+    inset 0 0 20px 0 var(--theme-glow),
     0 24px 48px -12px rgba(0, 0, 0, 0.85);
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .apple-glass:hover {
-  border-color: rgba(52, 211, 153, 0.35);
+  border-color: var(--theme-accent);
   box-shadow: 
     inset 0 1px 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 0 28px 0 rgba(16, 185, 129, 0.12),
+    inset 0 0 28px 0 var(--theme-glow),
     0 28px 56px -12px rgba(0, 0, 0, 0.95);
 }
 
 .apple-glass-subtle {
-  background: linear-gradient(155deg, rgba(6, 26, 18, 0.72) 0%, rgba(2, 11, 7, 0.84) 100%);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(16, 185, 129, 0.14);
+  border: 1px solid var(--glass-border);
   box-shadow: 
     inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
     0 12px 28px -8px rgba(0, 0, 0, 0.7);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .apple-button-press {
-  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms ease, opacity 150ms ease;
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms ease, opacity 150ms ease, border-color 150ms ease;
 }
 
 .apple-button-press:active {
   transform: scale(0.97);
 }
 
-/* Custom minimal scrollbar */
+/* Smooth Butter-Like Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -89,23 +126,41 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
+  backdrop-filter: blur(8px);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.26);
 }
 
-/* Background Animated Shield with Shining Forest Green Glow */
+/* Dynamic Center Radial Overtake Animation (Color sweeps from center over screen) */
+@keyframes radialCenterOvertake {
+  0% {
+    clip-path: circle(0% at 50% 45%);
+    opacity: 0.15;
+  }
+  40% {
+    opacity: 0.85;
+  }
+  100% {
+    clip-path: circle(150% at 50% 45%);
+    opacity: 1;
+  }
+}
+
+.animate-radial-overtake {
+  animation: radialCenterOvertake 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Background Animated Shield with Glowing Dynamics */
 @keyframes shield-float {
   0%, 100% {
     transform: translateY(0px) scale(1);
-    filter: drop-shadow(0 0 25px rgba(34, 197, 94, 0.45)) drop-shadow(0 0 50px rgba(21, 128, 61, 0.3));
   }
   50% {
     transform: translateY(-8px) scale(1.015);
-    filter: drop-shadow(0 0 40px rgba(74, 222, 128, 0.65)) drop-shadow(0 0 75px rgba(34, 197, 94, 0.45));
   }
 }
 
@@ -148,5 +203,3 @@ body {
 .animate-shield-sweep {
   animation: shield-specular-sweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
-
-

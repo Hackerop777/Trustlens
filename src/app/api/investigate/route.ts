@@ -3,6 +3,7 @@ import { z } from "zod";
 import { investigateURL } from "@/lib/investigation/orchestrator";
 import { investigateQRPayload } from "@/lib/qr/investigator";
 import { analyzeMessage } from "@/lib/message/analyzer";
+import { analyzeImage } from "@/lib/image/analyzer";
 import { getInvestigation } from "@/lib/investigation/store";
 
 export async function GET(req: NextRequest) {
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
 const RequestSchema = z.object({
   url: z.string().optional(),
   content: z.string().optional(),
+  imageData: z.string().optional(),
   type: z.enum(["URL", "MESSAGE", "IMAGE", "QR"]).optional().default("URL"),
 });
 
@@ -43,10 +45,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const target = (parsed.data.url || parsed.data.content || "").trim();
+    const target = (parsed.data.url || parsed.data.content || parsed.data.imageData || "").trim();
     if (!target) {
       return NextResponse.json(
-        { error: "Target content or URL is required for investigation" },
+        { error: "Target content, URL, or image data is required for investigation" },
         { status: 400 }
       );
     }
@@ -58,6 +60,11 @@ export async function POST(req: NextRequest) {
       result = await investigateQRPayload(target);
     } else if (type === "MESSAGE") {
       result = await analyzeMessage({ content: target });
+    } else if (type === "IMAGE") {
+      result = await analyzeImage({
+        imageData: parsed.data.imageData || (target.startsWith("data:image") ? target : undefined),
+        extractedText: target.startsWith("data:image") ? "Uploaded Image Screenshot" : target,
+      });
     } else {
       result = await investigateURL(target);
     }

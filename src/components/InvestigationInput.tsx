@@ -6,7 +6,11 @@ import { scanQRFromFile } from "@/lib/qr/scanner";
 import { performOCR, OCRScanResult } from "@/lib/ocr/service";
 
 interface InvestigationInputProps {
-  onInvestigate: (target: string, type?: "URL" | "MESSAGE" | "QR" | "IMAGE") => Promise<void>;
+  onInvestigate: (
+    target: string,
+    type?: "URL" | "MESSAGE" | "QR" | "IMAGE",
+    imageData?: string
+  ) => Promise<void>;
   isLoading: boolean;
   isExpanded?: boolean;
 }
@@ -18,6 +22,8 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
   const [qrScanning, setQrScanning] = useState(false);
   const [ocrScanning, setOcrScanning] = useState(false);
   const [ocrResult, setOcrResult] = useState<OCRScanResult | null>(null);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
 
   const qrFileInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +54,12 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
       color: "bg-rose-400",
       type: "QR" as const,
     },
+    {
+      label: "Unindexed Target (0/100)",
+      url: "https://my-random-test-domain-1234.org",
+      color: "bg-amber-400",
+      type: "URL" as const,
+    },
   ];
 
   const pipelineStages = [
@@ -60,7 +72,11 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
     "Gemini 3.8 Flash deducing attack chain & plain guidance",
   ];
 
-  const triggerPipeline = (target: string, type: "URL" | "MESSAGE" | "QR" | "IMAGE" = "URL") => {
+  const triggerPipeline = (
+    target: string,
+    type: "URL" | "MESSAGE" | "QR" | "IMAGE" = "URL",
+    imageData?: string
+  ) => {
     setCurrentStepIndex(0);
     const interval = setInterval(() => {
       setCurrentStepIndex((prev) => {
@@ -70,7 +86,7 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
       });
     }, 650);
 
-    onInvestigate(target, type).finally(() => {
+    onInvestigate(target, type, imageData).finally(() => {
       clearInterval(interval);
     });
   };
@@ -110,24 +126,37 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
     }
   };
 
-  // OCR Screenshot Handler
+  // OCR Screenshot & Multimodal Vision Handler
   const handleOCRFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setOcrScanning(true);
-    try {
-      const result = await performOCR(file);
-      setOcrResult(result);
+    setUploadedFileName(file.name);
 
-      if (result.success && result.detectedUrls.length > 0) {
-        const firstUrl = result.detectedUrls[0];
-        setUrlInput(firstUrl);
-        // Automatically start investigation on the first detected URL
-        triggerPipeline(firstUrl);
+    try {
+      // 1. Read image as Data URL for Gemini Multimodal Computer Vision
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      setUploadedImagePreview(dataUrl);
+
+      // 2. Trigger Image Pipeline with multimodal image data
+      triggerPipeline(file.name, "IMAGE", dataUrl);
+
+      // 3. Opportunistically run client-side OCR in background if available
+      try {
+        const result = await performOCR(file);
+        setOcrResult(result);
+      } catch {
+        // Fallback gracefully without blocking
       }
     } catch (err: any) {
-      alert("Error processing OCR: " + err?.message);
+      alert("Error reading image: " + err?.message);
     } finally {
       setOcrScanning(false);
       if (ocrFileInputRef.current) ocrFileInputRef.current.value = "";
@@ -170,7 +199,7 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
                 onChange={(e) => setUrlInput(e.target.value)}
                 disabled={isLoading}
                 placeholder="https://hdfc-verify-portal.xyz/login"
-                className={`w-full bg-[#051a10]/95 border border-emerald-500/30 rounded-[80px] pl-6 sm:pl-8 pr-36 sm:pr-40 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/70 focus:bg-[#072418] transition-all font-mono shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] ${
+                className={`w-full bg-[#041c10]/95 border border-emerald-600/35 rounded-[80px] pl-6 sm:pl-8 pr-36 sm:pr-40 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/60 focus:bg-[#062615] transition-all font-mono shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] ${
                   isExpanded ? "py-4 sm:py-4.5" : "py-3.5 sm:py-4"
                 }`}
                 style={{ borderRadius: "80px" }}
@@ -179,7 +208,7 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
               <button
                 type="submit"
                 disabled={isLoading || !urlInput.trim()}
-                className={`absolute right-2 px-5 sm:px-6 py-2.5 rounded-[80px] bg-black hover:bg-[#04120a] border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 font-semibold text-xs tracking-tight disabled:opacity-30 transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.8),0_0_15px_rgba(16,185,129,0.2)] cursor-pointer group ${
+                className={`absolute right-2 px-5 sm:px-6 py-2.5 rounded-[80px] bg-black hover:bg-[#04190e] border border-emerald-600/40 text-emerald-400 hover:text-emerald-300 font-semibold text-xs tracking-tight disabled:opacity-30 transition-all apple-button-press flex items-center space-x-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.8),0_0_15px_rgba(22,163,74,0.2)] cursor-pointer group ${
                   isExpanded ? "py-2.5 sm:py-3 px-6 sm:px-7" : "py-2.5 px-5 sm:px-6"
                 }`}
                 style={{ borderRadius: "80px" }}
@@ -244,19 +273,60 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
             />
             <div
               onClick={() => ocrFileInputRef.current?.click()}
-              className="p-6 cursor-pointer transition-all hover:bg-white/[0.02] text-center space-y-2 rounded-[60px]"
+              className="p-5 sm:p-6 cursor-pointer transition-all hover:bg-white/[0.02] text-center space-y-2 rounded-[60px]"
               style={{ borderRadius: "60px" }}
             >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-400/25 mx-auto flex items-center justify-center text-emerald-400">
-                {ocrScanning ? <Loader2 className="w-6 h-6 animate-spin text-emerald-400" /> : <Upload className="w-6 h-6" />}
-              </div>
-              <h4 className="text-sm font-semibold text-white">Upload Screenshot for OCR Extraction</h4>
-              <p className="text-xs text-white/50 max-w-sm mx-auto">
-                Extracts text, phone numbers, and embedded links from suspicious messages.
-              </p>
+              {uploadedImagePreview ? (
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.25)] group">
+                    <img
+                      src={uploadedImagePreview}
+                      alt="Uploaded Screenshot"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Upload className="w-5 h-5 text-white" />
+                    </div>
+                  </div>
+                  <div className="text-xs text-emerald-400 font-mono truncate max-w-xs">
+                    {uploadedFileName || "Uploaded Screenshot"}
+                  </div>
+                  <span className="text-[11px] text-white/50 underline hover:text-white transition-colors">
+                    Click to replace image
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-400/25 mx-auto flex items-center justify-center text-emerald-400">
+                    {ocrScanning ? <Loader2 className="w-6 h-6 animate-spin text-emerald-400" /> : <Upload className="w-6 h-6" />}
+                  </div>
+                  <h4 className="text-sm font-semibold text-white">Upload Screenshot for Vision & OCR Inspection</h4>
+                  <p className="text-xs text-white/50 max-w-sm mx-auto">
+                    Inspects phishing page screenshots, bank alerts, WhatsApp/SMS scams, and QR codes.
+                  </p>
+                </>
+              )}
             </div>
 
-            {ocrResult && ocrResult.success && (
+            {uploadedImagePreview && !isLoading && (
+              <div className="flex justify-center pb-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (uploadedImagePreview) {
+                      triggerPipeline(uploadedFileName || "Uploaded Screenshot", "IMAGE", uploadedImagePreview);
+                    }
+                  }}
+                  className="px-6 py-2 rounded-full bg-[#0a2e1d] hover:bg-[#0d3b24] border border-emerald-600/40 text-emerald-300 text-xs font-semibold apple-button-press cursor-pointer flex items-center space-x-1.5 shadow-[0_2px_12px_rgba(22,163,74,0.2)]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Re-analyze with Vision Forensics</span>
+                </button>
+              </div>
+            )}
+
+            {ocrResult && ocrResult.success && ocrResult.rawText && (
               <div
                 className="mx-4 mb-3 p-3.5 rounded-[40px] bg-black/60 border border-emerald-500/20 text-left text-xs"
                 style={{ borderRadius: "40px" }}
@@ -278,7 +348,7 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
                 disabled={isLoading}
                 rows={3}
                 placeholder="Paste suspicious SMS or WhatsApp message (e.g. 'Dear Customer, your bank KYC will expire tonight...')"
-                className="w-full bg-[#051a10]/95 border border-emerald-500/30 rounded-[50px] sm:rounded-[80px] px-8 sm:px-10 py-5 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-400/70 focus:bg-[#072418] transition-all font-mono shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] resize-none"
+                className="w-full bg-[#041c10]/95 border border-emerald-600/35 rounded-[50px] sm:rounded-[80px] px-8 sm:px-10 py-5 text-xs sm:text-sm text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/60 focus:bg-[#062615] transition-all font-mono shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.12)] resize-none"
                 style={{ borderRadius: "80px" }}
               />
             </div>
@@ -314,11 +384,11 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
             onClick={() => setActiveTab("URL")}
             className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full border flex items-center space-x-2 text-xs sm:text-sm font-medium transition-all apple-button-press cursor-pointer group ${
               activeTab === "URL"
-                ? "bg-[#0c2a1e] border-emerald-500/40 text-emerald-400 shadow-[0_2px_12px_rgba(16,185,129,0.18)]"
-                : "bg-[#0f1713]/90 hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-white"
+                ? "bg-[#0a2e1d] border-emerald-600/40 text-emerald-300 shadow-[0_2px_12px_rgba(22,163,74,0.22)]"
+                : "bg-[#081b12]/90 hover:bg-[#0c2e1e] border-white/[0.08] hover:border-emerald-600/30 text-white/70 hover:text-emerald-200"
             }`}
           >
-            <Globe className={`w-4 h-4 shrink-0 ${activeTab === "URL" ? "text-emerald-400" : "text-white/50 group-hover:text-white/80"}`} />
+            <Globe className={`w-4 h-4 shrink-0 ${activeTab === "URL" ? "text-emerald-300" : "text-white/50 group-hover:text-emerald-300"}`} />
             <span>Target URL</span>
           </button>
 
@@ -327,11 +397,11 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
             onClick={() => setActiveTab("QR")}
             className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full border flex items-center space-x-2 text-xs sm:text-sm font-medium transition-all apple-button-press cursor-pointer group ${
               activeTab === "QR"
-                ? "bg-[#0c2a1e] border-emerald-500/40 text-emerald-400 shadow-[0_2px_12px_rgba(16,185,129,0.18)]"
-                : "bg-[#0f1713]/90 hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-white"
+                ? "bg-[#0a2e1d] border-emerald-600/40 text-emerald-300 shadow-[0_2px_12px_rgba(22,163,74,0.22)]"
+                : "bg-[#081b12]/90 hover:bg-[#0c2e1e] border-white/[0.08] hover:border-emerald-600/30 text-white/70 hover:text-emerald-200"
             }`}
           >
-            <QrCode className={`w-4 h-4 shrink-0 ${activeTab === "QR" ? "text-emerald-400" : "text-white/50 group-hover:text-white/80"}`} />
+            <QrCode className={`w-4 h-4 shrink-0 ${activeTab === "QR" ? "text-emerald-300" : "text-white/50 group-hover:text-emerald-300"}`} />
             <span>QR Scanner</span>
           </button>
 
@@ -340,11 +410,11 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
             onClick={() => setActiveTab("OCR")}
             className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full border flex items-center space-x-2 text-xs sm:text-sm font-medium transition-all apple-button-press cursor-pointer group ${
               activeTab === "OCR"
-                ? "bg-[#0c2a1e] border-emerald-500/40 text-emerald-400 shadow-[0_2px_12px_rgba(16,185,129,0.18)]"
-                : "bg-[#0f1713]/90 hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-white"
+                ? "bg-[#0a2e1d] border-emerald-600/40 text-emerald-300 shadow-[0_2px_12px_rgba(22,163,74,0.22)]"
+                : "bg-[#081b12]/90 hover:bg-[#0c2e1e] border-white/[0.08] hover:border-emerald-600/30 text-white/70 hover:text-emerald-200"
             }`}
           >
-            <ImageIcon className={`w-4 h-4 shrink-0 ${activeTab === "OCR" ? "text-emerald-400" : "text-white/50 group-hover:text-white/80"}`} />
+            <ImageIcon className={`w-4 h-4 shrink-0 ${activeTab === "OCR" ? "text-emerald-300" : "text-white/50 group-hover:text-emerald-300"}`} />
             <span>Image OCR</span>
           </button>
 
@@ -353,11 +423,11 @@ export function InvestigationInput({ onInvestigate, isLoading, isExpanded = fals
             onClick={() => setActiveTab("MESSAGE")}
             className={`px-4 py-1.5 sm:px-5 sm:py-2 rounded-full border flex items-center space-x-2 text-xs sm:text-sm font-medium transition-all apple-button-press cursor-pointer group ${
               activeTab === "MESSAGE"
-                ? "bg-[#0c2a1e] border-emerald-500/40 text-emerald-400 shadow-[0_2px_12px_rgba(16,185,129,0.18)]"
-                : "bg-[#0f1713]/90 hover:bg-white/[0.06] border-white/[0.08] hover:border-white/[0.15] text-white/70 hover:text-white"
+                ? "bg-[#0a2e1d] border-emerald-600/40 text-emerald-300 shadow-[0_2px_12px_rgba(22,163,74,0.22)]"
+                : "bg-[#081b12]/90 hover:bg-[#0c2e1e] border-white/[0.08] hover:border-emerald-600/30 text-white/70 hover:text-emerald-200"
             }`}
           >
-            <MessageSquare className={`w-4 h-4 shrink-0 ${activeTab === "MESSAGE" ? "text-emerald-400" : "text-white/50 group-hover:text-white/80"}`} />
+            <MessageSquare className={`w-4 h-4 shrink-0 ${activeTab === "MESSAGE" ? "text-emerald-300" : "text-white/50 group-hover:text-emerald-300"}`} />
             <span>Message Text</span>
           </button>
         </div>
