@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>AI-Powered Scam Intelligence & Explainable Cyber Protection Platform</strong><br>
-  <em>Built by <b>TrustForge</b> for the THINK AI 4.0 Hackathon</em>
+  <em>Built by <b>TrustForge (Formally PhishSlayer)</b> for the THINK AI 4.0 Hackathon</em>
 </p>
 
 <p align="center">
