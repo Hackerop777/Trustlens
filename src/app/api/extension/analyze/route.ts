@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
             claimedBrand: investigation.brandVerification.claimedBrand,
             status: investigation.brandVerification.status,
             isMatch: investigation.brandVerification.status === "MATCH",
+            expectedDomain: investigation.brandVerification.expectedDomains?.[0],
           }
         : undefined,
     };

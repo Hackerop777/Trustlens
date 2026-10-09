@@ -1,6 +1,37 @@
 import { BRAND_REGISTRY, BrandProfile } from "./registry";
 import { BrandVerification } from "../types";
 import { checkRestrictedDomain } from "../domain/restricted-tlds";
+import { parse } from "tldts";
+
+/**
+ * Normalizes host by stripping leading "www." for canonical comparison.
+ */
+export function cleanDomainHost(host: string): string {
+  return host.toLowerCase().trim().replace(/^www\./, "");
+}
+
+/**
+ * Checks whether an observed host matches an authoritative domain.
+ * Accurately accounts for www. subdomains (e.g. www.youtube.com vs youtube.com),
+ * legitimate subdomains (e.g. m.youtube.com, studio.youtube.com),
+ * and common registered domain equality.
+ */
+export function isDomainAuthorized(observedHost: string, legitimateDomain: string): boolean {
+  const cleanObs = cleanDomainHost(observedHost);
+  const cleanLegit = cleanDomainHost(legitimateDomain);
+
+  if (cleanObs === cleanLegit) return true;
+  if (cleanObs.endsWith(`.${cleanLegit}`)) return true;
+
+  // Compare registered base domains via tldts
+  const obsParsed = parse(cleanObs);
+  const legitParsed = parse(cleanLegit);
+  if (obsParsed.domain && legitParsed.domain && obsParsed.domain === legitParsed.domain) {
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Normalizes text for brand matching.
@@ -101,7 +132,7 @@ export function verifyBrandDomain(
 
   // Check if observed domain matches any legitimate domain for this profile
   let isMatch = matchedProfile.legitimateDomains.some((legit) => {
-    return normObservedDomain === legit || normObservedDomain.endsWith(`.${legit}`);
+    return isDomainAuthorized(normObservedDomain, legit);
   });
 
   // If claimed brand matches a corporate Brand TLD (.apple, .google, .microsoft, .chase, etc.)
@@ -173,7 +204,7 @@ export async function verifyBrandDomainAsync(
       const liveProfile = await resolveBrandViaLiveWeb(candidate);
       if (liveProfile && liveProfile.officialDomains.length > 0) {
         const isMatch = liveProfile.officialDomains.some((legit) => {
-          return normObservedDomain === legit || normObservedDomain.endsWith(`.${legit}`);
+          return isDomainAuthorized(normObservedDomain, legit);
         });
 
         if (isMatch) {

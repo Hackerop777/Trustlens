@@ -305,6 +305,7 @@ export const ExtensionAnalysisResponseSchema = z.object({
     claimedBrand: z.string().optional(),
     status: BrandVerificationStatusSchema.optional(),
     isMatch: z.boolean().optional(),
+    expectedDomain: z.string().optional(),
   }).optional(),
 });
 export type ExtensionAnalysisResponse = z.infer<typeof ExtensionAnalysisResponseSchema>;

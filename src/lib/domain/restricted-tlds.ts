@@ -32,7 +32,7 @@ export const BRAND_TLDS: Record<string, BrandTldEntry> = {
   amazon: { brandName: "Amazon", category: "TECH", legitimateDomains: ["amazon.com", "amazon.in", "aws.amazon.com"] },
   azure: { brandName: "Microsoft Azure", category: "TECH", legitimateDomains: ["azure.com", "microsoft.com"] },
   bing: { brandName: "Microsoft Bing", category: "TECH", legitimateDomains: ["bing.com", "microsoft.com"] },
-  youtube: { brandName: "YouTube", category: "TECH", legitimateDomains: ["youtube.com", "google.com"] },
+  youtube: { brandName: "YouTube", category: "TECH", legitimateDomains: ["youtube.com", "youtu.be", "google.com"] },
   gmail: { brandName: "Google (Gmail)", category: "TECH", legitimateDomains: ["gmail.com", "google.com"] },
   android: { brandName: "Google Android", category: "TECH", legitimateDomains: ["android.com", "google.com"] },
   chrome: { brandName: "Google Chrome", category: "TECH", legitimateDomains: ["google.com"] },

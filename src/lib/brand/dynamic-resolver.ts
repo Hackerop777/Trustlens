@@ -86,7 +86,7 @@ Provide exact entity name and official primary domains.`;
         if (uri) {
           try {
             const parsed = parse(uri);
-            if (parsed.domain && !isThirdPartyPlatform(parsed.domain)) {
+            if (parsed.domain && !isThirdPartyPlatform(parsed.domain, cleanName)) {
               discoveredDomains.add(parsed.domain.toLowerCase());
             }
           } catch {}
@@ -98,7 +98,7 @@ Provide exact entity name and official primary domains.`;
     if (domainMatches) {
       for (const d of domainMatches) {
         const parsed = parse(d);
-        if (parsed.domain && !isThirdPartyPlatform(parsed.domain)) {
+        if (parsed.domain && !isThirdPartyPlatform(parsed.domain, cleanName)) {
           discoveredDomains.add(parsed.domain.toLowerCase());
         }
       }
@@ -137,7 +137,7 @@ Return ONLY a JSON array of registered domain strings (e.g. ["example.com"]). If
         for (const item of parsedArray) {
           if (typeof item === "string") {
             const parsed = parse(item);
-            if (parsed.domain && !isThirdPartyPlatform(parsed.domain)) {
+            if (parsed.domain && !isThirdPartyPlatform(parsed.domain, cleanName)) {
               discoveredDomains.add(parsed.domain.toLowerCase());
             }
           }
@@ -171,13 +171,22 @@ Return ONLY a JSON array of registered domain strings (e.g. ["example.com"]). If
 
 /**
  * Filter out generic social media/directory platforms that host pages but aren't the brand's own domain.
+ * If the candidate brand is the platform itself (e.g. YouTube, Google, GitHub, LinkedIn), it is not excluded.
  */
-function isThirdPartyPlatform(domain: string): boolean {
+function isThirdPartyPlatform(domain: string, candidateBrand?: string): boolean {
+  const normDom = domain.toLowerCase();
+  if (candidateBrand) {
+    const cleanCand = candidateBrand.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const domBase = normDom.split(".")[0];
+    if (cleanCand.includes(domBase) || domBase.includes(cleanCand)) {
+      return false;
+    }
+  }
   const platforms = new Set([
     "wikipedia.org", "wikimedia.org", "google.com", "bing.com", "yahoo.com",
     "facebook.com", "twitter.com", "x.com", "instagram.com", "linkedin.com",
     "youtube.com", "reddit.com", "medium.com", "github.com", "crunchbase.com",
     "bloomberg.com", "forbes.com", "reuters.com", "techcrunch.com", "sec.gov"
   ]);
-  return platforms.has(domain.toLowerCase());
+  return platforms.has(normDom);
 }

@@ -41,6 +41,7 @@ export interface ExtensionAnalysisResponse {
     claimedBrand?: string;
     status?: "MATCH" | "MISMATCH" | "UNKNOWN";
     isMatch?: boolean;
+    expectedDomain?: string;
   };
 }
 

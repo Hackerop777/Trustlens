@@ -275,12 +275,16 @@
   `;
     document.head.appendChild(styleEl);
     const scoreText = `${analysis.riskScore || 100}/100`;
+    const cleanHost = (h) => (h || "").toLowerCase().trim().replace(/^www\./, "");
     const currentHost = window.location.hostname || "current site";
+    const cleanCurrent = cleanHost(currentHost);
     const claimedBrandName = analysis.brandClaim?.claimedBrand || "official site";
     const expectedDomain = analysis.brandClaim?.expectedDomain || claimedBrandName.toLowerCase().replace(/\s+/g, "") + ".com";
-    let fakeDomainMarkup = `The URL <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> does not match the official <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(expectedDomain)}'</span> box.`;
-    if (analysis.brandClaim?.status === "MATCH") {
-      fakeDomainMarkup = `The domain <span style="background: rgba(16, 185, 129, 0.22); color: #6EE7B7; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> is legitimate, but contains suspicious credential fields.`;
+    const cleanExpected = cleanHost(expectedDomain);
+    const isDomainMatch = analysis.brandClaim?.isMatch === true || analysis.brandClaim?.status === "MATCH" || cleanCurrent === cleanExpected || cleanCurrent.endsWith(`.${cleanExpected}`);
+    let fakeDomainMarkup = `The URL <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> does not match the official <span style="background: rgba(239, 68, 68, 0.22); color: #FCA5A5; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(expectedDomain)}'</span> domain.`;
+    if (isDomainMatch) {
+      fakeDomainMarkup = `The domain <span style="background: rgba(16, 185, 129, 0.22); color: #6EE7B7; padding: 1px 5px; border-radius: 4px; font-family: monospace; font-size: 12px;">'${escapeHtml(currentHost)}'</span> matches official identity, but suspicious activity was flagged.`;
     }
     let unverifiedFieldsMarkup = `Detects attempts to harvest passwords and 2FA codes on this unverified domain.`;
     if (analysis.topSignals && analysis.topSignals.length > 0) {
@@ -314,21 +318,21 @@
       </div>
     </div>
 
-    <!-- Title Row: Potential Impersonation Detected -->
+    <!-- Title Row -->
     <div style="font-size: 20px; font-weight: 600; color: #FFFFFF; line-height: 1.35; margin-bottom: 18px; letter-spacing: -0.01em;">
-      Potential Impersonation<br>Detected
+      ${isDomainMatch ? "Suspicious Activity<br>Detected" : "Potential Impersonation<br>Detected"}
     </div>
 
     <!-- Threat Bullets -->
     <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px;">
-      <!-- Bullet 1: Fake Domain -->
+      <!-- Bullet 1: Domain Check -->
       <div style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #D1D5DB;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0; margin-top: 2px;">
-          <path d="M12 3L2 21H22L12 3Z" stroke="#F87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M12 9V13M12 17H12.01" stroke="#F87171" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 3L2 21H22L12 3Z" stroke="${isDomainMatch ? "#34D399" : "#F87171"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 9V13M12 17H12.01" stroke="${isDomainMatch ? "#34D399" : "#F87171"}" stroke-width="2" stroke-linecap="round"/>
         </svg>
         <div>
-          <span style="font-weight: 600; color: #FFFFFF;">Fake Domain:</span> ${fakeDomainMarkup}
+          <span style="font-weight: 600; color: #FFFFFF;">${isDomainMatch ? "Domain Status:" : "Fake Domain:"}</span> ${fakeDomainMarkup}
         </div>
       </div>
 
