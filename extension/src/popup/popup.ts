@@ -104,9 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
         break;
       case "UNKNOWN":
       default:
-        riskLabelEl.textContent = "Unidentified";
-        riskLabelEl.style.color = "#9CA3AF";
-        riskIconEl.textContent = "⚪";
+        riskLabelEl.textContent = "Unverified (0/100 != Safe)";
+        riskLabelEl.style.color = "#FFD60A";
+        riskIconEl.textContent = "⚠️";
         break;
     }
 
@@ -140,8 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeHtml(text: string): string {
+    const cleaned = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*/g, "");
     const div = document.createElement("div");
-    div.textContent = text;
+    div.textContent = cleaned;
     return div.innerHTML;
   }
 

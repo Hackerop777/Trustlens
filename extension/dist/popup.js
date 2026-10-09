@@ -90,9 +90,9 @@
           break;
         case "UNKNOWN":
         default:
-          riskLabelEl.textContent = "Unidentified";
-          riskLabelEl.style.color = "#9CA3AF";
-          riskIconEl.textContent = "\u26AA";
+          riskLabelEl.textContent = "Unverified (0/100 != Safe)";
+          riskLabelEl.style.color = "#FFD60A";
+          riskIconEl.textContent = "\u26A0\uFE0F";
           break;
       }
       if (attackChain && attackChain.length > 0 && classification !== "LOW") {
@@ -121,8 +121,9 @@
       }
     }
     function escapeHtml(text) {
+      const cleaned = text.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*/g, "");
       const div = document.createElement("div");
-      div.textContent = text;
+      div.textContent = cleaned;
       return div.innerHTML;
     }
     chrome.runtime.sendMessage({ type: "GET_CURRENT_TAB_STATUS" }, (response) => {
