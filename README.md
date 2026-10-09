@@ -34,7 +34,7 @@ TrustLens 2.0.0 introduces substantial upgrades across multimodal forensics, aut
 
 ---
 
-## 🎯 The Core Concept
+## 🎯 The Core Concept 
 
 **TRUSTLENS is NOT a generic "AI says phishing/safe" website.**
 
