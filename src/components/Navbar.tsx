@@ -24,8 +24,20 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Status Pills & Demo Link */}
+        {/* Status Pills & Navigation Links */}
         <div className="flex items-center space-x-2.5">
+          <Link
+            href="/studio"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-[#0d221b]/90 hover:bg-[#133328] border border-emerald-500/40 text-[11px] text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.1)] transition-colors"
+            title="Open GraphMind Copilot Whiteboard Chat"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="font-semibold tracking-tight">Copilot Studio</span>
+            <span className="px-1.5 py-0.5 rounded text-[9.5px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              GraphMind
+            </span>
+          </Link>
+
           <Link
             href="/demo-phish-fixture"
             className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-red-950/60 hover:bg-red-900/70 border border-red-500/30 text-[11px] text-red-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-colors"

@@ -6,6 +6,8 @@ import { AttackChainView } from "./AttackChainView";
 import { EvidenceList } from "./EvidenceCard";
 import { FollowUpChat } from "./FollowUpChat";
 import { PostVictimModal } from "./PostVictimModal";
+import { InvestigationStudioView } from "./studio/InvestigationStudioView";
+import Link from "next/link";
 import {
   Code2,
   ChevronDown,
@@ -14,6 +16,9 @@ import {
   Fingerprint,
   Share2,
   Check,
+  Layers,
+  ShieldAlert,
+  Maximize2,
 } from "lucide-react";
 
 interface ThreatReportProps {
@@ -22,6 +27,7 @@ interface ThreatReportProps {
 }
 
 export function ThreatReport({ result, onOpenPostVictim }: ThreatReportProps) {
+  const [activeTab, setActiveTab] = useState<"overview" | "studio">("overview");
   const [showJsonInspector, setShowJsonInspector] = useState(false);
   const [isPostVictimOpen, setIsPostVictimOpen] = useState(false);
   const [shareStatus, setShareStatus] = useState<"idle" | "shared">("idle");
@@ -115,17 +121,68 @@ export function ThreatReport({ result, onOpenPostVictim }: ThreatReportProps) {
         </div>
       </div>
 
-      {/* 2. In-Depth Investigation Intelligence */}
-      <div className="space-y-6">
-        {/* Attack Chain Progression */}
-        <AttackChainView steps={aiAssessment.attackChain} />
+      {/* 2. Investigation Mode Selector: Executive Overview vs GraphMind Studio */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
+        <div className="flex items-center gap-2 p-1 rounded-2xl bg-[#091018]/90 border border-slate-800">
+          <button
+            type="button"
+            onClick={() => setActiveTab("overview")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer ${
+              activeTab === "overview"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/40"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4" />
+            <span>Executive Report</span>
+          </button>
 
-        {/* Observable Evidence Cards */}
-        <EvidenceList evidence={evidence} />
+          <button
+            type="button"
+            onClick={() => setActiveTab("studio")}
+            className={`px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition cursor-pointer ${
+              activeTab === "studio"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/40"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Investigation Studio (GraphMind)</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-emerald-400/20 text-emerald-300">
+              2D DAG
+            </span>
+          </button>
+        </div>
 
-        {/* Conversational Follow-Up Assistant */}
-        <FollowUpChat investigation={result} />
+        <Link
+          href={`/studio?id=${encodeURIComponent(id)}`}
+          target="_blank"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#12202f]/80 hover:bg-[#1a2d42] border border-sky-500/30 text-sky-300 text-xs font-medium transition shrink-0"
+          title="Open Investigation Studio in dedicated full-screen window"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+          <span>Full-Screen Studio</span>
+        </Link>
       </div>
+
+      {/* 3. Active Mode Workspace */}
+      {activeTab === "studio" ? (
+        <InvestigationStudioView
+          investigation={result}
+          onOpenPostVictim={onOpenPostVictim}
+        />
+      ) : (
+        <div className="space-y-6">
+          {/* Attack Chain Progression */}
+          <AttackChainView steps={aiAssessment.attackChain} />
+
+          {/* Observable Evidence Cards */}
+          <EvidenceList evidence={evidence} />
+
+          {/* Conversational Follow-Up Assistant */}
+          <FollowUpChat investigation={result} />
+        </div>
+      )}
 
       {/* 3. Limitations & Scope Notices */}
       {limitations && limitations.length > 0 && (

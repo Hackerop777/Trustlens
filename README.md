@@ -20,6 +20,7 @@
 
 TrustLens 2.0.0 introduces substantial upgrades across multimodal forensics, autonomous trust architectures, executive UI polish, and real-time reasoning:
 
+- 🧠 **GraphMind Investigation Studio & Copilot**: Infinite 2D interactive whiteboard canvas powered by Gemini and GraphMind architecture. Features draggable cards with real-time cubic Bezier spline physics, strict ancestor-only context isolation (zero sibling context leaks), live token radar, conversational DAG branching, and full canvas management (clear canvas and subtree pruning).
 - 🖼️ **Multimodal Computer Vision Engine**: Direct screenshot upload and OCR forensics powered by `gemini-3.5-flash-lite` with native inline data processing. Automatically extracts URLs, phone numbers, brands, and visual scam patterns with sub-2-second latency.
 - 🌲 **Dark Forest Green Aesthetic**: Ultra-premium Dark Forest Green (Dark Leaf Foliage) visual language. Deep chlorophyll canopy backgrounds (`#020b06`), frosted glass cards (`rgba(6, 26, 16, 0.78)`), and deep leaf green accents (`#16a34a` / `#22c55e`).
 - 🌊 **Dynamic Center-Radiating Threat Atmosphere**: When a target is investigated, an animated wave radiates from the screen center (`50% 45%`) to wash the UI in the target's risk theme:

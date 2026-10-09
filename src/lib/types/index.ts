@@ -310,3 +310,110 @@ export const ExtensionAnalysisResponseSchema = z.object({
 });
 export type ExtensionAnalysisResponse = z.infer<typeof ExtensionAnalysisResponseSchema>;
 
+// ==========================================
+// 13. GRAPHMIND INVESTIGATION STUDIO CONTRACTS
+// ==========================================
+
+export const NodeEpistemicTypeSchema = z.enum([
+  "OBSERVED_FACT",        // Direct telemetry, DOM elements, HTTP codes
+  "EXTERNALLY_VERIFIED", // Authoritative brand registry, ICANN TLD, WHOIS, VirusTotal
+  "AI_INFERENCE",        // Gemini synthesis, attack chain deductions
+  "USER_INQUIRY",        // User questions & forensic hypotheses
+]);
+export type NodeEpistemicType = z.infer<typeof NodeEpistemicTypeSchema>;
+
+export const NodeVerificationStatusSchema = z.enum([
+  "VERIFIED",
+  "OBSERVED",
+  "INFERRED",
+  "UNVERIFIED",
+  "CONFLICTING",
+]);
+export type NodeVerificationStatus = z.infer<typeof NodeVerificationStatusSchema>;
+
+export const GraphNodeTypeSchema = z.enum([
+  "ROOT_TARGET",
+  "DOMAIN",
+  "CLAIMED_BRAND",
+  "VERIFICATION_VERDICT",
+  "REDIRECT",
+  "SUSPICIOUS_FORM",
+  "EVIDENCE_SIGNAL",
+  "ATTACK_CHAIN_STAGE",
+  "USER_QUESTION",
+  "INVESTIGATION_ACTION",
+]);
+export type GraphNodeType = z.infer<typeof GraphNodeTypeSchema>;
+
+export const InvestigationGraphNodeSchema = z.object({
+  id: z.string(),
+  parentId: z.string().nullable(),
+  role: z.enum(["user", "assistant", "system"]).optional().default("assistant"),
+  type: GraphNodeTypeSchema,
+  epistemicType: NodeEpistemicTypeSchema,
+  verificationStatus: NodeVerificationStatusSchema,
+  title: z.string(),
+  label: z.string(),
+  summary: z.string(),
+  content: z.string().optional(),
+  source: z.string(),
+  confidence: z.enum(["HIGH", "MEDIUM", "LOW"]),
+  timestamp: z.string(),
+  supportingEvidence: z.array(z.string()).optional(),
+  technicalDetails: z.record(z.string(), z.any()).optional(),
+  suggestedActions: z.array(z.string()).optional(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().default(340),
+  height: z.number().default(180),
+});
+export type InvestigationGraphNode = z.infer<typeof InvestigationGraphNodeSchema>;
+
+export const InvestigationGraphEdgeSchema = z.object({
+  id: z.string(),
+  fromId: z.string(),
+  toId: z.string(),
+  relation: z.string(),
+  strength: z.enum(["STRONG", "INFERRED", "SUSPICIOUS"]).default("STRONG"),
+});
+export type InvestigationGraphEdge = z.infer<typeof InvestigationGraphEdgeSchema>;
+
+export const CaseMemoryCheckSchema = z.object({
+  checkId: z.string(),
+  name: z.string(),
+  category: z.string(),
+  completedAt: z.string(),
+  outcome: z.string(),
+  source: z.string(),
+  cachedResult: z.any().optional(),
+});
+export type CaseMemoryCheck = z.infer<typeof CaseMemoryCheckSchema>;
+
+export const CaseMemoryInquirySchema = z.object({
+  id: z.string(),
+  nodeId: z.string().optional(),
+  userQuestion: z.string(),
+  agentAnswer: z.string(),
+  suggestedNextActions: z.array(z.string()).default([]),
+  timestamp: z.string(),
+});
+export type CaseMemoryInquiry = z.infer<typeof CaseMemoryInquirySchema>;
+
+export const CaseMemorySchema = z.object({
+  caseId: z.string(),
+  target: z.string(),
+  startedAt: z.string(),
+  lastActiveAt: z.string(),
+  completedChecks: z.array(CaseMemoryCheckSchema),
+  findings: z.array(z.object({
+    id: z.string(),
+    finding: z.string(),
+    epistemicType: NodeEpistemicTypeSchema,
+    verified: z.boolean(),
+  })),
+  inquiryHistory: z.array(CaseMemoryInquirySchema),
+  nodes: z.array(InvestigationGraphNodeSchema),
+  edges: z.array(InvestigationGraphEdgeSchema),
+});
+export type CaseMemory = z.infer<typeof CaseMemorySchema>;
+
