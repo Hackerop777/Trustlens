@@ -3,6 +3,8 @@
 import React from "react";
 import { Shield, Sparkles, Activity } from "lucide-react";
 
+import Link from "next/link";
+
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-2xl bg-[#030e09]/80 border-b border-emerald-500/15 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
@@ -22,8 +24,17 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Status Pills */}
+        {/* Status Pills & Demo Link */}
         <div className="flex items-center space-x-2.5">
+          <Link
+            href="/demo-phish-fixture"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-red-950/60 hover:bg-red-900/70 border border-red-500/30 text-[11px] text-red-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)] transition-colors"
+            title="Launch Synthetic Demo Test Page for Extension Testing"
+          >
+            <span className="w-2 h-2 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.9)]" />
+            <span className="font-medium tracking-tight">Demo Test Fixture</span>
+          </Link>
+
           <div className="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#162725]/80 border border-emerald-500/25 text-[11px] text-emerald-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08)]">
             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
             <span className="font-medium tracking-tight">Active Telemetry</span>
