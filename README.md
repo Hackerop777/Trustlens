@@ -245,4 +245,4 @@ Generates a fully optimized Next.js 16 build ready for deployment on Vercel or a
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-Developed with precision by **PhishSlayer** for **THINK AI 4.0**.
+Developed with precision by **TrustSlayer (Formally PhishSlayer)** for **THINK AI 4.0**.
